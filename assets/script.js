@@ -1,95 +1,73 @@
-(function () {
-  const CEMENT_COEFFICIENTS = {
-    M100: 220,
-    M200: 280,
-    M300: 350,
-    M400: 400,
-  };
+function num(id) {
+  return Number(document.getElementById(id)?.value || 0);
+}
 
-  const modeInputs = document.querySelectorAll('input[name="calcMode"]');
-  const volumeFields = document.getElementById('volumeFields');
-  const sizeFields = document.getElementById('sizeFields');
-  const volumeInput = document.getElementById('volume');
-  const lengthInput = document.getElementById('length');
-  const widthInput = document.getElementById('width');
-  const heightInput = document.getElementById('height');
-  const gradeSelect = document.getElementById('concreteGrade');
-  const resultBlock = document.getElementById('result');
-  const calcButton = document.getElementById('calcButton');
+function calc() {
+  const form = document.getElementById('calc-form');
+  const type = form?.dataset.type;
+  const result = document.getElementById('result');
 
-  if (!calcButton) {
+  if (!type || !result) {
     return;
   }
 
-  function getSelectedMode() {
-    const checkedMode = document.querySelector('input[name="calcMode"]:checked');
-    return checkedMode ? checkedMode.value : 'volume';
+  let value = 0;
+  let unit = '';
+
+  if (type === 'cement') {
+    value = num('volume') * 1400 * num('ratio');
+    unit = 'кг цемента';
   }
 
-  function toNumber(value) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : 0;
+  if (type === 'beton') {
+    value = num('volume') * 300 * (1 + num('reserve') / 100);
+    unit = 'кг сухой смеси';
   }
 
-  function showModeFields() {
-    const mode = getSelectedMode();
-    const isVolumeMode = mode === 'volume';
-
-    volumeFields.classList.toggle('hidden', !isVolumeMode);
-    sizeFields.classList.toggle('hidden', isVolumeMode);
+  if (type === 'plitka') {
+    value = (num('area') / num('tileArea')) * 1.1;
+    unit = 'шт. плитки';
   }
 
-  function getConcreteVolume(mode) {
-    if (mode === 'volume') {
-      return toNumber(volumeInput.value);
-    }
-
-    const length = toNumber(lengthInput.value);
-    const width = toNumber(widthInput.value);
-    const height = toNumber(heightInput.value);
-    return length * width * height;
+  if (type === 'oboi') {
+    value = (num('wallArea') / num('rollArea')) * 1.1;
+    unit = 'рулонов обоев';
   }
 
-  function formatNumber(value) {
-    return value.toLocaleString('ru-RU');
+  if (type === 'kraski') {
+    value = num('area') / num('consumption');
+    unit = 'л краски';
   }
 
-  function calc() {
-    const mode = getSelectedMode();
-    const volume = getConcreteVolume(mode);
-    const grade = gradeSelect.value;
-    const coefficient = CEMENT_COEFFICIENTS[grade];
-
-    if (!volume || volume <= 0) {
-      resultBlock.textContent = 'Введите корректные значения. Объем должен быть больше 0.';
-      return;
-    }
-
-    if (!coefficient) {
-      resultBlock.textContent = 'Не удалось определить коэффициент для выбранной марки бетона.';
-      return;
-    }
-
-    const roundedVolume = Math.ceil(volume);
-    const cementKg = Math.ceil(volume * coefficient);
-    const cementBags = Math.ceil(cementKg / 50);
-
-    resultBlock.innerHTML = [
-      '<strong>Результат расчета:</strong>',
-      '<ul>',
-      `<li>Объем бетона: ${formatNumber(roundedVolume)} м³</li>`,
-      `<li>Количество цемента: ${formatNumber(cementKg)} кг</li>`,
-      `<li>Количество мешков (50 кг): ${formatNumber(cementBags)} шт.</li>`,
-      '</ul>',
-    ].join('');
+  if (type === 'kirpich') {
+    value = num('wallVolume') / num('brickVolume');
+    unit = 'шт. кирпича';
   }
 
-  modeInputs.forEach(function (input) {
-    input.addEventListener('change', showModeFields);
-  });
+  if (type === 'shtukaturka') {
+    value = num('area') * num('thickness') * num('density');
+    unit = 'кг штукатурки';
+  }
 
-  calcButton.addEventListener('click', calc);
-  showModeFields();
+  if (type === 'gipsokarton') {
+    value = num('area') / num('sheetArea');
+    unit = 'листов гипсокартона';
+  }
 
-  window.calc = calc;
-})();
+  if (type === 'pol') {
+    value = num('area') / num('boardArea');
+    unit = 'досок для пола';
+  }
+
+  if (type === 'doski') {
+    value = num('area') / num('boardArea');
+    unit = 'досок';
+  }
+
+  if (!Number.isFinite(value) || value <= 0) {
+    result.textContent = 'Введите корректные значения для расчёта.';
+    return;
+  }
+
+  result.textContent = `Результат: ${Math.ceil(value)} ${unit}.`;
+}
