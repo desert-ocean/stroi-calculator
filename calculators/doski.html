@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Калькулятор досок онлайн</title>
+  <meta name="description" content="Калькулятор досок онлайн: рассчитайте количество досок по общей площади работ.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <h1>Калькулятор досок онлайн</h1>
+      <form id="calc-form" data-type="doski" onsubmit="event.preventDefault(); calc();">
+        <div class="form-grid">
+          <div><label for="area">Площадь работ (м²)</label><input id="area" type="number" step="0.01"></div>
+          <div><label for="boardArea">Площадь одной доски (м²)</label><input id="boardArea" type="number" step="0.0001"></div>
+        </div>
+        <button type="submit">Рассчитать</button>
+      </form>
+      <h2 id="result">Результат появится здесь.</h2>
+    </section>
+
+    <section class="card">
+      <h2>Как считается</h2>
+      <p>Формула: площадь / площадь доски. Подходит для примерного расчёта количества досок при обшивке, настиле или иных работах. Результат округляется вверх.</p>
+    </section>
+
+    <section class="card">
+      <h2>Смотрите также</h2>
+      <ul class="also-list">
+        <li><a href="pol.html">Калькулятор пола</a></li>
+        <li><a href="kirpich.html">Калькулятор кирпича</a></li>
+        <li><a href="beton.html">Калькулятор бетона</a></li>
+      </ul>
+    </section>
+  </main>
+  <script src="../assets/script.js"></script>
+</body>
+</html>

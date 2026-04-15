@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Калькулятор плитки онлайн</title>
-  <meta name="description" content="Калькулятор плитки онлайн: рассчитайте количество плитки по площади с запасом 10%.">
+  <title>Калькулятор гипсокартона онлайн</title>
+  <meta name="description" content="Калькулятор гипсокартона онлайн: узнайте количество листов по площади монтажа.">
   <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
   <main class="container">
     <section class="card">
-      <h1>Калькулятор плитки онлайн</h1>
-      <form id="calc-form" data-type="plitka" onsubmit="event.preventDefault(); calc();">
+      <h1>Калькулятор гипсокартона онлайн</h1>
+      <form id="calc-form" data-type="gipsokarton" onsubmit="event.preventDefault(); calc();">
         <div class="form-grid">
-          <div><label for="area">Площадь укладки (м²)</label><input id="area" type="number" step="0.01"></div>
-          <div><label for="tileArea">Площадь одной плитки (м²)</label><input id="tileArea" type="number" step="0.0001"></div>
+          <div><label for="area">Площадь монтажа (м²)</label><input id="area" type="number" step="0.01"></div>
+          <div><label for="sheetArea">Площадь листа (м²)</label><input id="sheetArea" type="number" step="0.01" value="3"></div>
         </div>
         <button type="submit">Рассчитать</button>
       </form>
@@ -23,7 +23,7 @@
 
     <section class="card">
       <h2>Как считается</h2>
-      <p>Формула: площадь помещения / площадь плитки × 1.1. Коэффициент 1.1 учитывает подрезку и возможный бой. Итог округляется вверх.</p>
+      <p>Формула: площадь / площадь листа. Используйте фактические размеры выбранного гипсокартона для более точной сметы. Результат округляется вверх.</p>
     </section>
 
     <section class="card">
