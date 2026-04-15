@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Калькулятор обоев — расчет рулонов по площади комнаты</title>
+</head>
+<body>
+
+<h1>Калькулятор обоев по площади комнаты</h1>
+
+<p>Рассчитайте, сколько рулонов обоев нужно для ремонта комнаты.</p>
+
+<hr>
+
+<label>Длина комнаты (м)</label><br>
+<input type="number" id="length"><br><br>
+
+<label>Ширина комнаты (м)</label><br>
+<input type="number" id="width"><br><br>
+
+<label>Высота потолка (м)</label><br>
+<input type="number" id="height"><br><br>
+
+<label>Длина рулона (м)</label><br>
+<input type="number" id="rollLength" value="10"><br><br>
+
+<label>Ширина рулона (м)</label><br>
+<input type="number" id="rollWidth" value="0.53"><br><br>
+
+<button onclick="calc()">Рассчитать</button>
+
+<h2 id="result"></h2>
+
+<hr>
+
+<h2>Как работает расчет</h2>
+<p>
+Сначала считается площадь стен комнаты, затем вычитается площадь одного рулона.
+После этого добавляется запас 10% на подрезку и ошибки.
+</p>
+
+<script>
+function calc() {
+
+    let length = parseFloat(document.getElementById("length").value);
+    let width = parseFloat(document.getElementById("width").value);
+    let height = parseFloat(document.getElementById("height").value);
+
+    let rollLength = parseFloat(document.getElementById("rollLength").value);
+    let rollWidth = parseFloat(document.getElementById("rollWidth").value);
+
+    // площадь стен (4 стены)
+    let wallArea = 2 * (length + width) * height;
+
+    // площадь одного рулона
+    let rollArea = rollLength * rollWidth;
+
+    // количество рулонов
+    let rolls = wallArea / rollArea;
+
+    // запас 10%
+    rolls = rolls * 1.1;
+
+    document.getElementById("result").innerText =
+        "Нужно рулонов обоев: " + Math.ceil(rolls);
+}
+</script>
+
+</body>
+</html>

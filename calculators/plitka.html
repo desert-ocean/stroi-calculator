@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Калькулятор плитки</title>
+</head>
+<body>
+
+<h1>Калькулятор плитки</h1>
+
+<label>Длина стены (м)</label>
+<input type="number" id="length">
+
+<label>Высота стены (м)</label>
+<input type="number" id="height">
+
+<label>Размер плитки (см)</label>
+<input type="number" id="tileSize">
+
+<button onclick="calc()">Рассчитать</button>
+
+<h2 id="result"></h2>
+
+<script>
+function calc() {
+    let l = parseFloat(document.getElementById("length").value);
+    let h = parseFloat(document.getElementById("height").value);
+    let size = parseFloat(document.getElementById("tileSize").value) / 100;
+
+    let area = l * h;
+    let tileArea = size * size;
+
+    let count = area / tileArea;
+
+    document.getElementById("result").innerText =
+        "Нужно плиток: " + Math.ceil(count * 1.1) + " (с запасом 10%)";
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+<label>Расход краски (м²/л)</label>
+<input type="number" id="consumption" value="10">
+
+<button onclick="calc()">Рассчитать</button>
+
+<h2 id="result"></h2>
+
+<script>
+function calc() {
+    let area = parseFloat(document.getElementById("area").value);
+    let cons = parseFloat(document.getElementById("consumption").value);
+
+    let liters = area / cons;
+
+    document.getElementById("result").innerText =
+        "Нужно краски: " + Math.ceil(liters) + " литров";
+}
+</script>
+
+</body>
+</html>

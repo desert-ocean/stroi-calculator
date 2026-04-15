@@ -1,0 +1,21 @@
+<input type="number" id="mark" value="300">
+
+<button onclick="calc()">Рассчитать</button>
+
+<h2 id="result"></h2>
+
+<script>
+function calc() {
+    let v = parseFloat(document.getElementById("volume").value);
+    let m = parseFloat(document.getElementById("mark").value);
+
+    // упрощённая формула (для MVP)
+    let cementKg = v * m * 1.2;
+
+    document.getElementById("result").innerText =
+        "Цемент: " + Math.ceil(cementKg) + " кг (примерный расчет)";
+}
+</script>
+
+</body>
+</html>
