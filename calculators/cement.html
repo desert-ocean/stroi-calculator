@@ -1,267 +1,40 @@
 <!doctype html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Калькулятор цемента — расчет по объему и размерам</title>
-    <meta
-      name="description"
-      content="Онлайн-калькулятор цемента: расчет по объему или размерам, выбор марки бетона, расчет цемента в кг и мешках по 50 кг."
-    />
-    <style>
-      :root {
-        color-scheme: light;
-      }
-
-      body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        color: #1f2937;
-        background: #f8fafc;
-        line-height: 1.45;
-      }
-
-      .container {
-        max-width: 860px;
-        margin: 0 auto;
-        padding: 24px 16px 40px;
-      }
-
-      h1,
-      h2 {
-        margin: 0 0 16px;
-      }
-
-      .calculator {
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 28px;
-      }
-
-      .modes {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 14px;
-        margin-bottom: 18px;
-      }
-
-      .mode-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 12px;
-        margin-bottom: 14px;
-      }
-
-      .field {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-
-      label {
-        font-weight: 600;
-      }
-
-      input,
-      select,
-      button {
-        font: inherit;
-      }
-
-      input,
-      select {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 10px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-      }
-
-      .hidden {
-        display: none;
-      }
-
-      button {
-        border: 0;
-        border-radius: 8px;
-        padding: 11px 16px;
-        background: #0ea5e9;
-        color: #fff;
-        font-weight: 700;
-        cursor: pointer;
-      }
-
-      button:hover {
-        background: #0284c7;
-      }
-
-      .result {
-        margin-top: 18px;
-        padding: 16px;
-        border-radius: 10px;
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-      }
-
-      .result ul {
-        margin: 10px 0 0;
-        padding-left: 18px;
-      }
-
-      .seo-block {
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 16px;
-      }
-
-      .seo-block table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      .seo-block th,
-      .seo-block td {
-        border: 1px solid #e5e7eb;
-        padding: 8px;
-        text-align: left;
-      }
-
-      .related-links ul {
-        margin: 0;
-        padding-left: 18px;
-      }
-    </style>
-  </head>
-  <body>
-    <main class="container">
-      <h1>Калькулятор цемента</h1>
-
-      <section class="calculator" aria-label="Калькулятор цемента">
-        <div class="modes" role="radiogroup" aria-label="Режим расчета">
-          <label class="mode-label">
-            <input type="radio" name="calcMode" value="volume" checked />
-            По объему
-          </label>
-          <label class="mode-label">
-            <input type="radio" name="calcMode" value="size" />
-            По размерам
-          </label>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Калькулятор цемента онлайн</title>
+  <meta name="description" content="Калькулятор цемента онлайн: рассчитайте количество цемента по объёму и доле в растворе.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <h1>Калькулятор цемента онлайн</h1>
+      <form id="calc-form" data-type="cement" onsubmit="event.preventDefault(); calc();">
+        <div class="form-grid">
+          <div><label for="volume">Объём раствора (м³)</label><input id="volume" type="number" step="0.01"></div>
+          <div><label for="ratio">Доля цемента (0.2, 0.25...)</label><input id="ratio" type="number" step="0.01" value="0.25"></div>
         </div>
+        <button type="submit">Рассчитать</button>
+      </form>
+      <h2 id="result">Результат появится здесь.</h2>
+    </section>
 
-        <div id="volumeFields" class="grid">
-          <div class="field">
-            <label for="volume">Объём бетона (м³)</label>
-            <input id="volume" type="number" min="0" step="0.01" placeholder="Например, 2.5" />
-          </div>
-        </div>
+    <section class="card">
+      <h2>Как считается</h2>
+      <p>Формула: объём × 1400 × доля цемента. Плотность цемента для упрощённого расчёта принята 1400 кг/м³, итог округляется вверх.</p>
+    </section>
 
-        <div id="sizeFields" class="grid hidden">
-          <div class="field">
-            <label for="length">Длина (м)</label>
-            <input id="length" type="number" min="0" step="0.01" placeholder="Например, 5" />
-          </div>
-          <div class="field">
-            <label for="width">Ширина (м)</label>
-            <input id="width" type="number" min="0" step="0.01" placeholder="Например, 3" />
-          </div>
-          <div class="field">
-            <label for="height">Высота (м)</label>
-            <input id="height" type="number" min="0" step="0.01" placeholder="Например, 0.2" />
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="concreteGrade">Марка бетона</label>
-          <select id="concreteGrade">
-            <option value="M100">М100</option>
-            <option value="M200" selected>М200</option>
-            <option value="M300">М300</option>
-            <option value="M400">М400</option>
-          </select>
-        </div>
-
-        <p>
-          <button id="calcButton" type="button">Рассчитать</button>
-        </p>
-
-        <div id="result" class="result" aria-live="polite">
-          Заполните поля и нажмите «Рассчитать».
-        </div>
-      </section>
-
-      <section class="seo-block">
-        <h2>Как рассчитать цемент</h2>
-        <p>
-          Для точного расчета сначала определите объем бетона: введите его напрямую или вычислите по формуле
-          длина × ширина × высота. Затем выберите марку бетона, потому что у каждой марки свой расход цемента
-          на 1 м³ смеси. Калькулятор умножает объем на коэффициент и показывает итог в килограммах. После этого
-          результат делится на 50 кг, чтобы вы сразу видели количество стандартных мешков. Все значения
-          округляются в большую сторону, чтобы не столкнуться с нехваткой материала на объекте. Перед заказом
-          также полезно добавить небольшой запас на потери при транспортировке и замесе.
-        </p>
-      </section>
-
-      <section class="seo-block">
-        <h2>Сколько цемента нужно на 1 м³</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Марка бетона</th>
-              <th>Расход цемента</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>М100</td>
-              <td>220 кг/м³</td>
-            </tr>
-            <tr>
-              <td>М200</td>
-              <td>280 кг/м³</td>
-            </tr>
-            <tr>
-              <td>М300</td>
-              <td>350 кг/м³</td>
-            </tr>
-            <tr>
-              <td>М400</td>
-              <td>400 кг/м³</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-
-      <section class="seo-block">
-        <h2>Частые ошибки</h2>
-        <ul>
-          <li>Путаница единиц измерения: сантиметры вводят как метры.</li>
-          <li>Игнорирование округления — материала может не хватить на финальном этапе.</li>
-          <li>Выбор неподходящей марки бетона для нагрузки и условий эксплуатации.</li>
-          <li>Расчет без запаса при сложной форме опалубки и дополнительных потерях.</li>
-        </ul>
-      </section>
-
-      <section class="seo-block related-links">
-        <h2>Смотрите также</h2>
-        <ul>
-          <li><a href="beton.html">Калькулятор бетона</a></li>
-          <li><a href="plitka.html">Калькулятор плитки</a></li>
-          <li><a href="oboi.html">Калькулятор обоев</a></li>
-        </ul>
-      </section>
-    </main>
-
-    <script src="../assets/script.js"></script>
-  </body>
+    <section class="card">
+      <h2>Смотрите также</h2>
+      <ul class="also-list">
+        <li><a href="beton.html">Калькулятор бетона</a></li>
+        <li><a href="kirpich.html">Калькулятор кирпича</a></li>
+        <li><a href="shtukaturka.html">Калькулятор штукатурки</a></li>
+      </ul>
+    </section>
+  </main>
+  <script src="../assets/script.js"></script>
+</body>
 </html>
