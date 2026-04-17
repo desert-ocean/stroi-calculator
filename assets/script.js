@@ -64,6 +64,11 @@ function calc() {
     unit = 'досок';
   }
 
+  if (type === 'teplopoteri') {
+    value = num('area') * num('deltaTemp') * num('uValue');
+    unit = 'Вт теплопотерь';
+  }
+
   if (!Number.isFinite(value) || value <= 0) {
     result.textContent = 'Введите корректные значения для расчёта.';
     return;
@@ -71,3 +76,16 @@ function calc() {
 
   result.textContent = `Результат: ${Math.ceil(value)} ${unit}.`;
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('calc-form');
+
+  if (!form) {
+    return;
+  }
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    calc();
+  });
+});

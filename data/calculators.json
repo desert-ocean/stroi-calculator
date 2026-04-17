@@ -1,10 +1,202 @@
 [
   {
-    "name": "Калькулятор цемента",
-    "url": "cement.html"
+    "name": "Калькулятор кирпича",
+    "url": "kalkulyator-kirpicha.html"
+  },
+  {
+    "name": "Калькулятор бетона",
+    "url": "kalkulyator-betona.html"
+  },
+  {
+    "name": "Калькулятор фундамента",
+    "url": "kalkulyator-fundamenta.html"
+  },
+  {
+    "name": "Калькулятор арматуры",
+    "url": "kalkulyator-armatury.html"
+  },
+  {
+    "name": "Калькулятор стяжки",
+    "url": "kalkulyator-styazhki.html"
   },
   {
     "name": "Калькулятор плитки",
-    "url": "plitka.html"
+    "url": "kalkulyator-plitki.html"
+  },
+  {
+    "name": "Калькулятор обоев",
+    "url": "kalkulyator-oboev.html"
+  },
+  {
+    "name": "Калькулятор краски",
+    "url": "kalkulyator-kraski.html"
+  },
+  {
+    "name": "Калькулятор ламината",
+    "url": "kalkulyator-laminata.html"
+  },
+  {
+    "name": "Калькулятор гипсокартона",
+    "url": "kalkulyator-gipsokartona.html"
+  },
+  {
+    "name": "Калькулятор утеплителя",
+    "url": "kalkulyator-uteplitelya.html"
+  },
+  {
+    "name": "Калькулятор кровли",
+    "url": "kalkulyator-krovli.html"
+  },
+  {
+    "name": "Калькулятор газобетона",
+    "url": "kalkulyator-gazobetona.html"
+  },
+  {
+    "name": "Калькулятор пеноблоков",
+    "url": "kalkulyator-penoblokov.html"
+  },
+  {
+    "name": "Калькулятор клея",
+    "url": "kalkulyator-kleya.html"
+  },
+  {
+    "name": "Калькулятор затирки",
+    "url": "kalkulyator-zatirki.html"
+  },
+  {
+    "name": "Калькулятор штукатурки",
+    "url": "kalkulyator-shtukaturki.html"
+  },
+  {
+    "name": "Калькулятор песка",
+    "url": "kalkulyator-peska.html"
+  },
+  {
+    "name": "Калькулятор щебня",
+    "url": "kalkulyator-shchebnya.html"
+  },
+  {
+    "name": "Калькулятор доски",
+    "url": "kalkulyator-doski.html"
+  },
+  {
+    "name": "Калькулятор бруса",
+    "url": "kalkulyator-brusa.html"
+  },
+  {
+    "name": "Калькулятор лестницы",
+    "url": "kalkulyator-lestnicy.html"
+  },
+  {
+    "name": "Калькулятор площади комнаты",
+    "url": "kalkulyator-ploshchadi-komnaty.html"
+  },
+  {
+    "name": "Калькулятор объёма комнаты",
+    "url": "kalkulyator-obema-komnaty.html"
+  },
+  {
+    "name": "Калькулятор теплопотерь",
+    "url": "kalkulyator-teplopoter.html"
+  },
+  {
+    "name": "Калькулятор расхода краски",
+    "url": "kalkulyator-rashoda-kraski.html"
+  },
+  {
+    "name": "Калькулятор расхода плиточного клея",
+    "url": "kalkulyator-rashoda-kleya-plitochnogo.html"
+  },
+  {
+    "name": "Калькулятор расчёта крыши",
+    "url": "kalkulyator-rascheta-kryshi.html"
+  },
+  {
+    "name": "Калькулятор угла наклона крыши",
+    "url": "kalkulyator-ugla-naklona-kryshi.html"
+  },
+  {
+    "name": "Калькулятор количества гвоздей",
+    "url": "kalkulyator-kolichestva-gvozdei.html"
+  },
+  {
+    "name": "Калькулятор саморезов",
+    "url": "kalkulyator-samorezov.html"
+  },
+  {
+    "name": "Калькулятор профиля",
+    "url": "kalkulyator-profilia.html"
+  },
+  {
+    "name": "Калькулятор наливного пола",
+    "url": "kalkulyator-nalivnogo-pola.html"
+  },
+  {
+    "name": "Калькулятор стен",
+    "url": "kalkulyator-sten.html"
+  },
+  {
+    "name": "Калькулятор перегородок",
+    "url": "kalkulyator-peregorodok.html"
+  },
+  {
+    "name": "Калькулятор расчёта окна",
+    "url": "kalkulyator-rascheta-okna.html"
+  },
+  {
+    "name": "Калькулятор дверей",
+    "url": "kalkulyator-dverei.html"
+  },
+  {
+    "name": "Калькулятор ванны",
+    "url": "kalkulyator-vanny.html"
+  },
+  {
+    "name": "Калькулятор расчёта бассейна",
+    "url": "kalkulyator-rascheta-basseina.html"
+  },
+  {
+    "name": "Калькулятор площади стен",
+    "url": "kalkulyator-ploshchadi-sten.html"
+  },
+  {
+    "name": "Калькулятор объёма бетона",
+    "url": "kalkulyator-obema-betona.html"
+  },
+  {
+    "name": "Калькулятор расхода цемента",
+    "url": "kalkulyator-rashoda-cementa.html"
+  },
+  {
+    "name": "Калькулятор смеси",
+    "url": "kalkulyator-smesi.html"
+  },
+  {
+    "name": "Калькулятор расчёта фасада",
+    "url": "kalkulyator-rascheta-fasada.html"
+  },
+  {
+    "name": "Калькулятор утепления стен",
+    "url": "kalkulyator-utepleniya-sten.html"
+  },
+  {
+    "name": "Калькулятор пола",
+    "url": "kalkulyator-pola.html"
+  },
+  {
+    "name": "Калькулятор потолка",
+    "url": "kalkulyator-potolka.html"
+  },
+  {
+    "name": "Калькулятор расчёта плит перекрытия",
+    "url": "kalkulyator-rascheta-plit-perekrytiya.html"
+  },
+  {
+    "name": "Калькулятор расчёта материалов",
+    "url": "kalkulyator-rascheta-materialov.html"
+  },
+  {
+    "name": "Калькулятор ремонта квартиры",
+    "url": "kalkulyator-remonta-kvartiry.html"
   }
 ]
