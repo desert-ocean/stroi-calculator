@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{TITLE}}</title>
+  <meta name="description" content="{{DESCRIPTION}}">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <h1>{{H1}}</h1>
+      <p>{{INTRO}}</p>
+      <p>{{INTRO_2}}</p>
+    </section>
+
+    <section class="card">
+      <h2>Результат расчёта</h2>
+      <p>{{RESULT_SUMMARY}}</p>
+      <ul class="also-list">
+        {{INPUT_ITEMS}}
+      </ul>
+      <p><strong>Формула:</strong> {{FORMULA}}</p>
+      <ul class="also-list">
+        {{RESULT_ITEMS}}
+      </ul>
+      <p>{{RESULT_EXPLANATION}}</p>
+    </section>
+
+    <section class="card">
+      <h2>Проверить и изменить параметры</h2>
+      {{FORM}}
+      <h2 id="result">{{LIVE_RESULT}}</h2>
+      <p><a href="{{CALCULATOR_URL}}">Открыть основной калькулятор</a></p>
+    </section>
+
+    <section class="card">
+      <h2>Как читать результат</h2>
+      <p>{{BODY_1}}</p>
+      <p>{{BODY_2}}</p>
+      <p>{{BODY_3}}</p>
+
+      <h3>Разбор сценария</h3>
+      <p>{{EXAMPLE_TEXT}}</p>
+    </section>
+
+    <section class="card">
+      <h2>Похожие расчёты</h2>
+      <ul class="also-list">
+        {{RELATED_PAGES}}
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Полезные калькуляторы</h2>
+      <ul class="also-list">
+        {{RELATED_CALCULATORS}}
+      </ul>
+      <p><a href="index.html">Все сценарные страницы</a></p>
+      <p><a href="../index.html">На главную</a></p>
+    </section>
+  </main>
+  <script src="../assets/script.js"></script>
+</body>
+</html>
