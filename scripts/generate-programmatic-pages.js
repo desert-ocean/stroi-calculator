@@ -4,9 +4,9 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 const data = JSON.parse(fs.readFileSync(path.join(root, 'data', 'programmatic-seo.json'), 'utf8'));
 const template = fs.readFileSync(path.join(root, 'templates', 'programmatic-template.html'), 'utf8');
+const { writeSitemaps } = require('./generate-sitemap');
 const outputDir = path.join(root, 'programmatic');
 const seoDir = path.join(root, 'seo');
-const SITE_URL = 'https://stroy-zamer.ru';
 
 const INDEXED_TARGET = Number(process.env.PSEO_INDEXED_TARGET || 1200);
 const MAX_PAGES = Number(process.env.PSEO_MAX_PAGES || 1400);
@@ -779,45 +779,6 @@ function renderHub(pages) {
 </html>`;
 }
 
-function formatDate(date) {
-  return date.toISOString().slice(0, 10);
-}
-
-function pageLastmod(relativePath) {
-  return formatDate(fs.statSync(path.join(root, relativePath)).mtime);
-}
-
-function sitemapEntry(relativePath, priority) {
-  const urlPath = relativePath === 'index.html' ? '/' : `/${relativePath.replace(/\\/g, '/')}`;
-  return `  <url>
-    <loc>${SITE_URL}${urlPath}</loc>
-    <lastmod>${pageLastmod(relativePath)}</lastmod>
-    <priority>${priority}</priority>
-  </url>`;
-}
-
-function htmlPagesIn(directory) {
-  return fs.readdirSync(path.join(root, directory))
-    .filter((fileName) => fileName.endsWith('.html'))
-    .sort()
-    .map((fileName) => `${directory}/${fileName}`);
-}
-
-function renderSitemap() {
-  const calculatorPages = htmlPagesIn('calculators');
-  const programmaticPages = htmlPagesIn('programmatic');
-  const seoPages = htmlPagesIn('seo');
-
-  const entries = [
-    sitemapEntry('index.html', '1.0'),
-    ...calculatorPages.map((relativePath) => sitemapEntry(relativePath, '0.9')),
-    ...programmaticPages.map((relativePath) => sitemapEntry(relativePath, '0.8')),
-    ...seoPages.map((relativePath) => sitemapEntry(relativePath, '0.5'))
-  ];
-
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries.join('\n')}\n</urlset>\n`;
-}
-
 function writeQualityReport(pages, candidatesCount) {
   const report = {
     generatedAt: new Date().toISOString(),
@@ -851,8 +812,7 @@ pages.forEach((page) => {
 
 fs.writeFileSync(path.join(outputDir, 'index.html'), renderHub(pages), 'utf8');
 fs.writeFileSync(path.join(seoDir, 'programmatic-urls.txt'), `${indexablePages.map((page) => `programmatic/${page.slug}.html`).join('\n')}\n`, 'utf8');
-fs.writeFileSync(path.join(root, 'sitemap.xml'), renderSitemap(), 'utf8');
-fs.writeFileSync(path.join(seoDir, 'sitemap.xml'), renderSitemap(), 'utf8');
+writeSitemaps();
 writeQualityReport(pages, candidates.length);
 
 console.log(`Candidates: ${candidates.length}`);
