@@ -5,9 +5,234 @@ const root = path.resolve(__dirname, '..');
 const data = JSON.parse(fs.readFileSync(path.join(root, 'data', 'programmatic-seo.json'), 'utf8'));
 const template = fs.readFileSync(path.join(root, 'templates', 'programmatic-template.html'), 'utf8');
 const outputDir = path.join(root, 'programmatic');
+const seoDir = path.join(root, 'seo');
+
+const INDEXED_TARGET = Number(process.env.PSEO_INDEXED_TARGET || 1200);
+const MAX_PAGES = Number(process.env.PSEO_MAX_PAGES || 1400);
+const MIN_INDEX_SCORE = 78;
+const MIN_CREATE_SCORE = 62;
+
+const calculators = {
+  beton: {
+    name: 'Калькулятор бетона',
+    url: '../calculators/kalkulyator-betona.html',
+    related: [
+      { name: 'Калькулятор фундамента', url: '../calculators/kalkulyator-fundamenta.html' },
+      { name: 'Калькулятор объёма бетона', url: '../calculators/kalkulyator-obema-betona.html' },
+      { name: 'Калькулятор расхода цемента', url: '../calculators/kalkulyator-rashoda-cementa.html' }
+    ]
+  },
+  smesi: {
+    name: 'Калькулятор стяжки пола',
+    url: '../calculators/kalkulyator-styazhki.html',
+    related: [
+      { name: 'Калькулятор наливного пола', url: '../calculators/kalkulyator-nalivnogo-pola.html' },
+      { name: 'Калькулятор расхода цемента', url: '../calculators/kalkulyator-rashoda-cementa.html' },
+      { name: 'Калькулятор пола', url: '../calculators/kalkulyator-pola.html' }
+    ]
+  },
+  plitka: {
+    name: 'Калькулятор плитки',
+    url: '../calculators/kalkulyator-plitki.html',
+    related: [
+      { name: 'Калькулятор плиточного клея', url: '../calculators/kalkulyator-rashoda-kleya-plitochnogo.html' },
+      { name: 'Калькулятор затирки', url: '../calculators/kalkulyator-zatirki.html' },
+      { name: 'Калькулятор площади стен', url: '../calculators/kalkulyator-ploshchadi-sten.html' }
+    ]
+  },
+  uteplitel: {
+    name: 'Калькулятор утепления стен',
+    url: '../calculators/kalkulyator-utepleniya-sten.html',
+    related: [
+      { name: 'Калькулятор утеплителя', url: '../calculators/kalkulyator-uteplitelya.html' },
+      { name: 'Калькулятор теплопотерь дома', url: '../calculators/kalkulyator-teplopoter.html' },
+      { name: 'Калькулятор фасада', url: '../calculators/kalkulyator-rascheta-fasada.html' }
+    ]
+  },
+  bassein: {
+    name: 'Калькулятор расчёта бассейна',
+    url: '../calculators/kalkulyator-rascheta-basseina.html',
+    related: [
+      { name: 'Калькулятор бетона', url: '../calculators/kalkulyator-betona.html' },
+      { name: 'Калькулятор плитки', url: '../calculators/kalkulyator-plitki.html' },
+      { name: 'Калькулятор объёма комнаты', url: '../calculators/kalkulyator-obema-komnaty.html' }
+    ]
+  }
+};
+
+const formFields = {
+  beton: [
+    ['length', 'Длина, м', '0.1', 'Для ленты это суммарная длина, для плиты или дорожки - длина участка.'],
+    ['width', 'Ширина, м', '0.1', 'Ширина ленты, плиты, дорожки или площадки.'],
+    ['height', 'Толщина или высота, м', '0.01', 'Для плиты это толщина, для ленты - высота бетонирования.'],
+    ['reserve', 'Запас, %', '0.1', 'Резерв на потери, подачу и неточные замеры.']
+  ],
+  smesi: [
+    ['length', 'Длина помещения, м', '0.1', 'Длина зоны, где выполняется стяжка.'],
+    ['width', 'Ширина помещения, м', '0.1', 'Ширина той же зоны.'],
+    ['thickness', 'Толщина стяжки, мм', '1', 'Средняя толщина слоя после выставления уровня.'],
+    ['consumption', 'Расход смеси на 1 мм, кг/м²', '0.01', 'Норма расхода из технической карты смеси.'],
+    ['reserve', 'Запас, %', '0.1', 'Запас на перепады основания и потери.']
+  ],
+  plitka: [
+    ['length', 'Длина поверхности, м', '0.1', 'Длина пола, стены или рабочей зоны.'],
+    ['width', 'Ширина или высота поверхности, м', '0.1', 'Второй размер облицовываемой поверхности.'],
+    ['tileLength', 'Длина плитки, мм', '1', 'Рабочий формат плитки по длине.'],
+    ['tileWidth', 'Ширина плитки, мм', '1', 'Рабочий формат плитки по ширине.'],
+    ['reserve', 'Запас, %', '0.1', 'Запас на подрезку, бой и раскладку.']
+  ],
+  uteplitel: [
+    ['area', 'Площадь стен, м²', '0.1', 'Чистая площадь утепления без крупных проёмов.'],
+    ['thickness', 'Толщина утеплителя, мм', '1', 'Рабочая толщина теплоизоляционного слоя.'],
+    ['reserve', 'Запас, %', '0.1', 'Запас на подрезку плит и сложные узлы.']
+  ],
+  bassein: [
+    ['length', 'Длина бассейна, м', '0.1', 'Внутренний размер чаши по длине.'],
+    ['width', 'Ширина бассейна, м', '0.1', 'Внутренний размер чаши по ширине.'],
+    ['depth', 'Глубина, м', '0.1', 'Средняя рабочая глубина чаши.']
+  ]
+};
+
+const pageFamilies = [
+  {
+    family: 'foundation',
+    calcType: 'beton',
+    titleType: 'фундамент',
+    scenarios: ['фундамент дома', 'фундамент гаража', 'фундамент бани', 'ленточный фундамент пристройки', 'ростверк под каркасный дом'],
+    sizes: [[6, 6], [6, 8], [7, 8], [8, 8], [8, 10], [9, 9], [10, 10], [10, 12], [12, 12], [12, 14]],
+    widths: [0.3, 0.35, 0.4, 0.45, 0.5],
+    heights: [0.8, 1, 1.2, 1.4, 1.5],
+    reserves: [7, 8, 10],
+    demand: 4,
+    build(seed) {
+      const perimeter = 2 * (seed.size[0] + seed.size[1]);
+      const inner = seed.size[0] >= 8 ? seed.size[0] : 0;
+      return {
+        ...seed,
+        length: perimeter + inner,
+        width: seed.width,
+        height: seed.height,
+        reserve: seed.reserve,
+        sizeText: `${seed.size[0]}×${seed.size[1]} м`,
+        parameterText: `лента ${formatRu(perimeter + inner, 1)} м, ${formatRu(seed.width, 2)}×${formatRu(seed.height, 2)} м`
+      };
+    }
+  },
+  {
+    family: 'concrete-flat',
+    calcType: 'beton',
+    titleType: 'бетон',
+    scenarios: ['монолитная плита под дом', 'плита под гараж', 'бетонная площадка под авто', 'отмостка вокруг дома', 'садовая дорожка', 'площадка под беседку'],
+    sizes: [[3, 4], [4, 4], [4, 6], [5, 6], [6, 6], [6, 8], [8, 8], [8, 10], [10, 12], [12, 1.2], [18, 1.2], [24, 1.2], [30, 1]],
+    heights: [0.08, 0.1, 0.12, 0.15, 0.18, 0.2, 0.25],
+    reserves: [7, 8, 10, 12],
+    demand: 4,
+    build(seed) {
+      return {
+        ...seed,
+        length: seed.size[0],
+        width: seed.size[1],
+        height: seed.height,
+        reserve: seed.reserve,
+        sizeText: `${formatRu(seed.size[0], 1)}×${formatRu(seed.size[1], 1)} м`,
+        parameterText: `площадь ${formatRu(seed.size[0] * seed.size[1], 2)} м², слой ${formatRu(seed.height * 100, 0)} см`
+      };
+    }
+  },
+  {
+    family: 'screed',
+    calcType: 'smesi',
+    titleType: 'стяжка',
+    scenarios: ['стяжка в квартире', 'стяжка в гараже', 'стяжка в ванной', 'стяжка на кухне', 'стяжка пола в доме', 'полусухая стяжка'],
+    sizes: [[3, 3], [3, 4], [4, 4], [4, 5], [5, 5], [5, 6], [6, 7], [7, 8], [8, 10], [10, 10], [12, 10]],
+    thicknesses: [30, 40, 50, 60, 70, 80, 90],
+    consumptions: [1.65, 1.7, 1.8, 1.9],
+    reserves: [7, 8, 9, 10],
+    demand: 5,
+    build(seed) {
+      return {
+        ...seed,
+        length: seed.size[0],
+        width: seed.size[1],
+        thickness: seed.thickness,
+        consumption: seed.consumption,
+        reserve: seed.reserve,
+        sizeText: `${formatRu(seed.size[0] * seed.size[1], 0)} м²`,
+        parameterText: `площадь ${formatRu(seed.size[0] * seed.size[1], 0)} м², слой ${formatRu(seed.thickness / 10, 0)} см`
+      };
+    }
+  },
+  {
+    family: 'tile',
+    calcType: 'plitka',
+    titleType: 'плитка',
+    scenarios: ['плитка для ванной', 'плитка на кухонный фартук', 'керамогранит на пол кухни', 'плитка для санузла', 'керамогранит в коридор', 'плитка на стену душевой'],
+    sizes: [[2, 2], [2.5, 2], [3, 2], [3, 3], [4, 2], [4, 3], [5, 2], [6, 2], [6, 3], [8, 2.5], [10, 2]],
+    formats: [[200, 300], [250, 400], [300, 300], [300, 600], [400, 400], [600, 600], [600, 1200]],
+    reserves: [8, 10, 12, 15],
+    demand: 5,
+    build(seed) {
+      return {
+        ...seed,
+        length: seed.size[0],
+        width: seed.size[1],
+        tileLength: seed.format[0],
+        tileWidth: seed.format[1],
+        reserve: seed.reserve,
+        sizeText: `${formatRu(seed.size[0] * seed.size[1], 1)} м²`,
+        parameterText: `${formatRu(seed.size[0] * seed.size[1], 1)} м², формат ${seed.format[0]}×${seed.format[1]} мм`
+      };
+    }
+  },
+  {
+    family: 'insulation',
+    calcType: 'uteplitel',
+    titleType: 'утеплитель',
+    scenarios: ['утепление фасада дома', 'утепление стен гаража', 'утепление бани', 'утепление стен коттеджа', 'утепление пристройки', 'утепление мансардной стены'],
+    areas: [36, 48, 60, 72, 80, 96, 100, 120, 140, 150, 180, 220],
+    thicknesses: [50, 80, 100, 120, 150, 200],
+    reserves: [7, 8, 9, 10, 12],
+    demand: 4,
+    build(seed) {
+      return {
+        ...seed,
+        area: seed.area,
+        thickness: seed.thickness,
+        reserve: seed.reserve,
+        sizeText: `${seed.area} м²`,
+        parameterText: `${seed.area} м², слой ${seed.thickness} мм`
+      };
+    }
+  },
+  {
+    family: 'pool',
+    calcType: 'bassein',
+    titleType: 'бассейн',
+    scenarios: ['бассейн во дворе', 'бассейн для бани', 'семейный бассейн', 'купель', 'детский бассейн', 'техническая чаша'],
+    sizes: [[2, 2], [3, 2], [4, 2.5], [5, 3], [6, 3], [7, 3.5], [8, 4], [10, 4]],
+    depths: [1.1, 1.2, 1.4, 1.5, 1.6, 1.8],
+    demand: 3,
+    build(seed) {
+      return {
+        ...seed,
+        length: seed.size[0],
+        width: seed.size[1],
+        depth: seed.depth,
+        sizeText: `${formatRu(seed.size[0], 1)}×${formatRu(seed.size[1], 1)} м`,
+        parameterText: `${formatRu(seed.size[0], 1)}×${formatRu(seed.size[1], 1)} м, глубина ${formatRu(seed.depth, 1)} м`
+      };
+    }
+  }
+];
 
 function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
+}
+
+function cleanGeneratedPages(dir) {
+  fs.readdirSync(dir)
+    .filter((fileName) => fileName.endsWith('.html'))
+    .forEach((fileName) => fs.unlinkSync(path.join(dir, fileName)));
 }
 
 function formatRu(value, digits = 2) {
@@ -17,403 +242,514 @@ function formatRu(value, digits = 2) {
   }).format(Number(value.toFixed(digits)));
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
+}
+
 function hashString(value) {
-  let hash = 0;
-  for (let i = 0; i < value.length; i += 1) {
-    hash = ((hash << 5) - hash) + value.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
+  return [...String(value)].reduce((hash, char) => ((hash << 5) - hash + char.charCodeAt(0)) | 0, 0);
 }
 
-function pickVariant(seed, options) {
-  return options[hashString(seed) % options.length];
+function pick(seed, variants) {
+  return variants[Math.abs(hashString(seed)) % variants.length];
 }
 
-function fieldHtml(field) {
+function translit(value) {
+  const map = {
+    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y',
+    к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f',
+    х: 'h', ц: 'c', ч: 'ch', ш: 'sh', щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya'
+  };
+  return value.toLowerCase()
+    .split('')
+    .map((char) => map[char] ?? char)
+    .join('')
+    .replace(/×/g, 'x')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-');
+}
+
+function fieldHtml(page, field) {
+  const [id, label, step, help] = field;
   return `<div>
-            <label for="${field.id}">${field.label}</label>
-            <input id="${field.id}" type="number" step="${field.step}" value="${field.value}" placeholder="${field.placeholder}">
-            <p>${field.help}</p>
+            <label for="${id}">${label}</label>
+            <input id="${id}" type="number" step="${step}" value="${escapeHtml(page[id] ?? '')}">
+            <p>${help}</p>
           </div>`;
 }
 
-function buildForm(preset, values) {
-  const presets = {
-    foundation: { type: 'beton', fields: [
-      { id: 'length', label: 'Суммарная длина ленты, м', step: '0.1', value: values.length, placeholder: 'Например, 40', help: 'Сложите наружный периметр и внутренние несущие участки.' },
-      { id: 'width', label: 'Ширина ленты, м', step: '0.01', value: values.width, placeholder: 'Например, 0.4', help: 'Берите рабочую ширину бетонной ленты.' },
-      { id: 'height', label: 'Высота бетонирования, м', step: '0.01', value: values.height, placeholder: 'Например, 1.2', help: 'Укажите именно высоту бетонной части.' },
-      { id: 'reserve', label: 'Запас, %', step: '0.1', value: values.reserve, placeholder: 'Например, 7', help: 'Резерв нужен на потери смеси и неточные замеры.' }
-    ]},
-    beton: { type: 'beton', fields: [
-      { id: 'length', label: 'Длина участка, м', step: '0.1', value: values.length, placeholder: 'Например, 8', help: 'Чистая длина плиты, площадки или дорожки.' },
-      { id: 'width', label: 'Ширина участка, м', step: '0.1', value: values.width, placeholder: 'Например, 6', help: 'Для сложной формы считайте зоны отдельно.' },
-      { id: 'height', label: 'Толщина слоя, м', step: '0.01', value: values.height, placeholder: 'Например, 0.18', help: 'Для плиты и дорожек это толщина бетонного слоя.' },
-      { id: 'reserve', label: 'Запас, %', step: '0.1', value: values.reserve, placeholder: 'Например, 7', help: 'Резерв на потери при подаче и подрезку.' }
-    ]},
-    screed: { type: 'smesi', fields: [
-      { id: 'length', label: 'Длина помещения, м', step: '0.1', value: values.length, placeholder: 'Например, 6', help: 'Длина пола или одной рабочей зоны.' },
-      { id: 'width', label: 'Ширина помещения, м', step: '0.1', value: values.width, placeholder: 'Например, 5', help: 'Ширина той же зоны, где делается стяжка.' },
-      { id: 'thickness', label: 'Средняя толщина стяжки, мм', step: '1', value: values.thickness, placeholder: 'Например, 50', help: 'Толщину берите после выставления уровня и маяков.' },
-      { id: 'consumption', label: 'Расход смеси на 1 мм, кг/м²', step: '0.01', value: values.consumption, placeholder: 'Например, 1.8', help: 'Норма расхода зависит от выбранной смеси.' },
-      { id: 'reserve', label: 'Запас, %', step: '0.1', value: values.reserve, placeholder: 'Например, 8', help: 'Запас нужен на локальные перепады и потери.' }
-    ]},
-    tile: { type: 'plitka', fields: [
-      { id: 'length', label: 'Длина поверхности, м', step: '0.1', value: values.length, placeholder: 'Например, 3', help: 'Для пола это длина комнаты, для стены длина участка.' },
-      { id: 'width', label: 'Ширина или высота поверхности, м', step: '0.1', value: values.width, placeholder: 'Например, 2', help: 'Второй размер облицовываемой зоны.' },
-      { id: 'tileLength', label: 'Длина плитки, мм', step: '1', value: values.tileLength, placeholder: 'Например, 600', help: 'Размер плитки по рабочему формату.' },
-      { id: 'tileWidth', label: 'Ширина плитки, мм', step: '1', value: values.tileWidth, placeholder: 'Например, 600', help: 'Для прямоугольной плитки ширина и длина разные.' },
-      { id: 'reserve', label: 'Запас, %', step: '0.1', value: values.reserve, placeholder: 'Например, 10', help: 'Резерв нужен на подрезку и диагональную раскладку.' }
-    ]},
-    insulation: { type: 'uteplitel', fields: [
-      { id: 'area', label: 'Площадь стен, м²', step: '0.1', value: values.area, placeholder: 'Например, 100', help: 'Берите чистую площадь без крупных проёмов.' },
-      { id: 'thickness', label: 'Толщина утеплителя, мм', step: '1', value: values.thickness, placeholder: 'Например, 100', help: 'Рабочая толщина выбранного материала.' },
-      { id: 'reserve', label: 'Запас, %', step: '0.1', value: values.reserve, placeholder: 'Например, 8', help: 'Резерв нужен на подрезку плит и сложные узлы.' }
-    ]},
-    repair: { type: 'remont', fields: [
-      { id: 'area', label: 'Площадь квартиры, м²', step: '0.1', value: values.area, placeholder: 'Например, 50', help: 'Суммарная площадь всех помещений в ремонте.' },
-      { id: 'price', label: 'Стоимость ремонта за 1 м², ₽', step: '1', value: values.price, placeholder: 'Например, 19000', help: 'Цена зависит от региона и уровня отделки.' },
-      { id: 'reserve', label: 'Запас, %', step: '0.1', value: values.reserve, placeholder: 'Например, 12', help: 'Резерв нужен на скрытые работы и материалы.' }
-    ]}
-  };
-
-  const config = presets[preset];
-  return `<form id="calc-form" data-type="${config.type}">
+function buildForm(page) {
+  return `<form id="calc-form" data-type="${page.calcType}">
         <div class="form-grid">
-${config.fields.map(fieldHtml).join('\n')}
+${formFields[page.calcType].map((field) => fieldHtml(page, field)).join('\n')}
         </div>
         <button type="submit">Рассчитать</button>
       </form>`;
 }
 
-function calculateMetrics(cluster, scenario) {
-  if (cluster.formPreset === 'foundation') {
-    const baseVolume = scenario.length * scenario.width * scenario.height;
-    const finalVolume = baseVolume * (1 + scenario.reserve / 100);
-    const cementKg = finalVolume * 320;
-    return {
-      liveResult: `Результат: ${formatRu(finalVolume, 3)} м³ бетона.`,
-      summary: `Для фундамента ${scenario.sizeText} расчёт даёт ${formatRu(finalVolume, 3)} м³ бетона с резервом ${scenario.reserve}%. Это уже готовая цифра для заказа бетона, а не только текстовый пример.`,
-      formula: `V = длина ленты × ширина × высота × (1 + запас / 100) = ${scenario.length} × ${scenario.width} × ${scenario.height} × ${formatRu(1 + scenario.reserve / 100, 2)}`,
-      inputs: [
-        `Суммарная длина ленты: ${formatRu(scenario.length, 1)} м`,
-        `Ширина ленты: ${formatRu(scenario.width, 2)} м`,
-        `Высота бетонирования: ${formatRu(scenario.height, 2)} м`,
-        `Чистый объём без запаса: ${formatRu(baseVolume, 3)} м³`
-      ],
-      results: [
-        `Итоговый объём бетона: ${formatRu(finalVolume, 3)} м³`,
-        `Ориентир по цементу при норме 320 кг/м³: ${formatRu(cementKg, 0)} кг`,
-        `Это примерно ${formatRu(cementKg / 50, 1)} мешков цемента по 50 кг`,
-        `При доставке миксером по 7 м³ понадобится около ${formatRu(finalVolume / 7, 1)} рейса`
-      ],
-      explanation: `Если в проекте появится внутренняя несущая лента или ростверк, достаточно увеличить общую длину и пересчитать сценарий. Базовая формула совпадает с логикой основного калькулятора фундамента.`
-    };
-  }
+function concreteMetrics(page) {
+  const area = page.family === 'foundation' ? null : page.length * page.width;
+  const cleanVolume = page.length * page.width * page.height;
+  const reserveVolume = cleanVolume * page.reserve / 100;
+  const finalVolume = cleanVolume + reserveVolume;
+  const cementKg = finalVolume * (page.family === 'foundation' ? 320 : 300);
+  const mixerTrips = finalVolume / 7;
+  const inputItems = page.family === 'foundation'
+    ? [
+      `Суммарная длина ленты: ${formatRu(page.length, 1)} м`,
+      `Ширина ленты: ${formatRu(page.width, 2)} м`,
+      `Высота бетонирования: ${formatRu(page.height, 2)} м`,
+      `Запас: ${page.reserve}%`
+    ]
+    : [
+      `Длина: ${formatRu(page.length, 1)} м`,
+      `Ширина: ${formatRu(page.width, 1)} м`,
+      `Площадь: ${formatRu(area, 2)} м²`,
+      `Толщина слоя: ${formatRu(page.height * 100, 0)} см`
+    ];
 
-  if (cluster.formPreset === 'beton') {
-    const baseVolume = scenario.length * scenario.width * scenario.height;
-    const finalVolume = baseVolume * (1 + scenario.reserve / 100);
-    const area = scenario.length * scenario.width;
-    return {
-      liveResult: `Результат: ${formatRu(finalVolume, 3)} м³ бетона.`,
-      summary: `Для сценария «${scenario.object} ${scenario.sizeText}» итоговый расчёт составляет ${formatRu(finalVolume, 3)} м³ бетона. Пользователь сразу видит реальные числа по площади и толщине слоя.`,
-      formula: `V = длина × ширина × толщина × (1 + запас / 100) = ${scenario.length} × ${scenario.width} × ${scenario.height} × ${formatRu(1 + scenario.reserve / 100, 2)}`,
-      inputs: [
-        `Длина участка: ${formatRu(scenario.length, 1)} м`,
-        `Ширина участка: ${formatRu(scenario.width, 1)} м`,
-        `Площадь участка: ${formatRu(area, 2)} м²`,
-        `Толщина слоя: ${formatRu(scenario.height * 100, 0)} см`
-      ],
-      results: [
-        `Чистый объём без запаса: ${formatRu(baseVolume, 3)} м³`,
-        `Итоговый объём бетона: ${formatRu(finalVolume, 3)} м³`,
-        `Запас в абсолютном значении: ${formatRu(finalVolume - baseVolume, 3)} м³`,
-        `При заливке миксером по 7 м³ это около ${formatRu(finalVolume / 7, 1)} рейса`
-      ],
-      explanation: `Такой формат особенно полезен для плит, отмосток и дорожек, где пользователь обычно ищет готовую кубатуру под конкретный размер, а не общий справочный калькулятор.`
-    };
-  }
-
-  if (cluster.formPreset === 'screed') {
-    const area = scenario.length * scenario.width;
-    const mass = area * scenario.thickness * scenario.consumption * (1 + scenario.reserve / 100);
-    const cleanMass = area * scenario.thickness * scenario.consumption;
-    return {
-      liveResult: `Результат: ${formatRu(mass, 1)} кг смеси на площадь ${formatRu(area, 2)} м².`,
-      summary: `Для стяжки площадью ${formatRu(area, 2)} м² и толщиной ${formatRu(scenario.thickness / 10, 0)} см нужно ${formatRu(mass, 1)} кг смеси с учётом запаса. Это уже можно переводить в мешки и бюджет.`,
-      formula: `M = площадь × толщина в мм × расход на 1 мм × (1 + запас / 100) = ${formatRu(area, 2)} × ${scenario.thickness} × ${scenario.consumption} × ${formatRu(1 + scenario.reserve / 100, 2)}`,
-      inputs: [
-        `Длина помещения: ${formatRu(scenario.length, 1)} м`,
-        `Ширина помещения: ${formatRu(scenario.width, 1)} м`,
-        `Площадь пола: ${formatRu(area, 2)} м²`,
-        `Средняя толщина стяжки: ${formatRu(scenario.thickness / 10, 0)} см`
-      ],
-      results: [
-        `Чистый расход без запаса: ${formatRu(cleanMass, 1)} кг`,
-        `Итоговый расход смеси: ${formatRu(mass, 1)} кг`,
-        `Это примерно ${formatRu(mass / 25, 0)} мешков по 25 кг`,
-        `Или около ${formatRu(mass / 40, 0)} мешков по 40 кг`
-      ],
-      explanation: `Здесь расчёт строится по той же логике, что и основной калькулятор стяжки: площадь умножается на толщину и норму расхода. Отличие в том, что сценарий уже адаптирован под конкретную толщину и площадь запроса.`
-    };
-  }
-
-  if (cluster.formPreset === 'tile') {
-    const area = scenario.length * scenario.width;
-    const tileArea = (scenario.tileLength / 1000) * (scenario.tileWidth / 1000);
-    const cleanTiles = area / tileArea;
-    const finalTiles = cleanTiles * (1 + scenario.reserve / 100);
-    return {
-      liveResult: `Результат: ${formatRu(finalTiles, 0)} плиток на площадь ${formatRu(area, 2)} м².`,
-      summary: `Для облицовки ${scenario.object} площадью ${scenario.sizeText} понадобится около ${formatRu(finalTiles, 0)} плиток с запасом ${scenario.reserve}%. Страница показывает реальное количество, а не только общие рекомендации.`,
-      formula: `N = площадь облицовки ÷ площадь одной плитки × (1 + запас / 100) = ${formatRu(area, 2)} ÷ ${formatRu(tileArea, 3)} × ${formatRu(1 + scenario.reserve / 100, 2)}`,
-      inputs: [
-        `Размер поверхности: ${formatRu(scenario.length, 1)} × ${formatRu(scenario.width, 1)} м`,
-        `Площадь облицовки: ${formatRu(area, 2)} м²`,
-        `Формат плитки: ${scenario.tileLength} × ${scenario.tileWidth} мм`,
-        `Площадь одной плитки: ${formatRu(tileArea, 3)} м²`
-      ],
-      results: [
-        `Чистое количество плиток без запаса: ${formatRu(cleanTiles, 0)} шт.`,
-        `Итоговое количество с запасом: ${formatRu(finalTiles, 0)} шт.`,
-        `Дополнительный резерв: ${formatRu(finalTiles - cleanTiles, 0)} шт.`,
-        `Запрос лучше закрывается под практический кейс: конкретная площадь + формат плитки`
-      ],
-      explanation: `В отличие от шаблонной SEO-страницы здесь расчёт зависит от реальной площади поверхности и размера плитки. Если пользователь меняет формат с 300×300 на 600×600 мм, количество пересчитывается сразу.`
-    };
-  }
-
-  if (cluster.formPreset === 'insulation') {
-    const cleanVolume = scenario.area * (scenario.thickness / 1000);
-    const finalVolume = cleanVolume * (1 + scenario.reserve / 100);
-    return {
-      liveResult: `Результат: ${formatRu(finalVolume, 3)} м³ утеплителя.`,
-      summary: `Для утепления ${scenario.object} площадью ${scenario.sizeText} и толщиной ${scenario.thickness} мм требуется ${formatRu(finalVolume, 3)} м³ утеплителя с учётом подрезки и технологического запаса.`,
-      formula: `V = площадь × толщина слоя × (1 + запас / 100) = ${scenario.area} × ${formatRu(scenario.thickness / 1000, 3)} × ${formatRu(1 + scenario.reserve / 100, 2)}`,
-      inputs: [
-        `Площадь стен: ${formatRu(scenario.area, 1)} м²`,
-        `Толщина утепления: ${scenario.thickness} мм`,
-        `Чистый объём без запаса: ${formatRu(cleanVolume, 3)} м³`,
-        `Запас на подрезку: ${scenario.reserve}%`
-      ],
-      results: [
-        `Итоговый объём утеплителя: ${formatRu(finalVolume, 3)} м³`,
-        `Добавочный резерв: ${formatRu(finalVolume - cleanVolume, 3)} м³`,
-        `При слое ${scenario.thickness} мм объём напрямую зависит от площади фасада`,
-        `Страница уже содержит готовый набор параметров для типового long-tail запроса`
-      ],
-      explanation: `На практике пользователю важнее всего быстро получить кубатуру утеплителя по своей площади и толщине, а затем перейти к расчёту фасада или теплопотерь. Эта страница решает именно эту задачу.`
-    };
-  }
-
-  const cleanBudget = scenario.area * scenario.price;
-  const finalBudget = cleanBudget * (1 + scenario.reserve / 100);
   return {
-    liveResult: `Результат: ориентировочно ${formatRu(finalBudget, 0)} ₽ на ремонт.`,
-    summary: `Для квартиры площадью ${scenario.sizeText} ориентировочный бюджет ремонта составляет ${formatRu(finalBudget, 0)} ₽ с резервом ${scenario.reserve}%. Число зависит от реальной ставки за м² и не является шаблонной подстановкой.`,
-    formula: `Бюджет = площадь × цена за м² × (1 + запас / 100) = ${scenario.area} × ${scenario.price} × ${formatRu(1 + scenario.reserve / 100, 2)}`,
-    inputs: [
-      `Площадь квартиры: ${formatRu(scenario.area, 1)} м²`,
-      `Ставка ремонта: ${formatRu(scenario.price, 0)} ₽ за м²`,
-      `Бюджет без запаса: ${formatRu(cleanBudget, 0)} ₽`,
-      `Резерв на скрытые работы: ${scenario.reserve}%`
-    ],
+    unit: 'м³',
+    resultNumber: finalVolume,
+    title: `Расчёт бетона: ${page.scenario} ${page.sizeText}, ${formatRu(finalVolume, 3)} м³`,
+    description: `${page.scenario}: ${page.parameterText}. Итоговый объём бетона ${formatRu(finalVolume, 3)} м³ с запасом ${page.reserve}%.`,
+    h1: `Сколько бетона нужно: ${page.scenario} ${page.sizeText}`,
+    liveResult: `Результат: ${formatRu(finalVolume, 3)} м³ бетона.`,
+    summary: `Для задачи «${page.scenario} ${page.sizeText}» расчёт даёт ${formatRu(finalVolume, 3)} м³ бетона. Чистый объём по геометрии: ${formatRu(cleanVolume, 3)} м³, резерв: ${formatRu(reserveVolume, 3)} м³.`,
+    inputs: inputItems,
+    formula: `V = ${formatRu(page.length, 2)} × ${formatRu(page.width, 2)} × ${formatRu(page.height, 2)} × (1 + ${page.reserve} / 100)`,
     results: [
-      `Итоговая смета: ${formatRu(finalBudget, 0)} ₽`,
-      `Размер резерва: ${formatRu(finalBudget - cleanBudget, 0)} ₽`,
-      `Средний бюджет на каждый м² с резервом: ${formatRu(finalBudget / scenario.area, 0)} ₽`,
-      `Расчёт удобен как стартовая точка перед детальной сметой по материалам`
+      `Чистый объём: ${formatRu(cleanVolume, 3)} м³`,
+      `Запас: ${formatRu(reserveVolume, 3)} м³`,
+      `Итого к заказу: ${formatRu(finalVolume, 3)} м³`,
+      `Ориентир по цементу: ${formatRu(cementKg, 0)} кг, или ${formatRu(cementKg / 50, 1)} мешка по 50 кг`,
+      `При миксере 7 м³: около ${formatRu(mixerTrips, 1)} рейса`
     ],
-    explanation: `Здесь страница отличается не только цифрой площади. Меняется итоговая смета, размер резерва и пояснение сценария, поэтому long-tail URL выглядит как самостоятельный расчётный кейс.`
+    explanation: page.family === 'foundation'
+      ? `Для ленточного фундамента результат зависит от суммарной длины ленты, а не только от внешнего размера здания. В этом сценарии в расчёт заложено ${formatRu(page.length, 1)} м рабочей длины.`
+      : `В таких работах главная связка параметров - площадь и толщина слоя. При той же площади увеличение толщины на 2 см заметно меняет кубатуру заказа.`,
+    recommendation: pick(page.slug, [
+      `Перед заказом бетона проверьте высоту опалубки и фактическую толщину слоя: именно эти значения чаще всего дают лишний объём.`,
+      `Если объект разбит на несколько зон, считайте каждую отдельно и складывайте объёмы до добавления общего резерва.`,
+      `Для поставки миксером округляйте итог по правилам поставщика, но сохраняйте исходную цифру расчёта для контроля сметы.`
+    ])
   };
 }
 
-function scenarioDescriptor(cluster, scenario) {
-  if (cluster.id === 'foundation') {
-    return `фундамент ${scenario.sizeText}`;
-  }
-  if (cluster.id === 'slab-beton') {
-    return `${scenario.object} ${scenario.sizeText}`;
-  }
-  if (cluster.id === 'screed') {
-    return `стяжка ${scenario.sizeText} толщиной ${formatRu(scenario.thickness / 10, 0)} см`;
-  }
-  if (cluster.id === 'tile') {
-    return `плитка для ${scenario.object} ${scenario.sizeText}`;
-  }
-  if (cluster.id === 'insulation') {
-    return `утепление ${scenario.object} ${scenario.sizeText}`;
-  }
-  return `ремонт квартиры ${scenario.sizeText}`;
-}
+function screedMetrics(page) {
+  const area = page.length * page.width;
+  const cleanMass = area * page.thickness * page.consumption;
+  const reserveMass = cleanMass * page.reserve / 100;
+  const finalMass = cleanMass + reserveMass;
 
-function meta(cluster, scenario, metrics) {
-  const seed = scenario.slug;
-  const introLead = pickVariant(seed, [
-    'Страница собрана под конкретный long-tail запрос и сразу показывает рабочий сценарий с числами.',
-    'Это не абстрактное описание, а готовый расчётный кейс с параметрами, которые можно сразу проверить в форме.',
-    'Пользователь попадает на страницу уже с заданными размерами и видит итоговый результат без ручной подготовки.'
-  ]);
-
-  if (cluster.id === 'foundation') {
-    const finalVolume = scenario.length * scenario.width * scenario.height * (1 + scenario.reserve / 100);
-    return {
-      title: `Расчет бетона для фундамента ${scenario.sizeText} — ${formatRu(finalVolume, 3)} м³ бетона онлайн`,
-      description: `Расчет бетона для фундамента ${scenario.sizeText}: длина ленты ${scenario.length} м, ширина ${scenario.width} м, высота ${scenario.height} м. Итог ${formatRu(scenario.length * scenario.width * scenario.height * (1 + scenario.reserve / 100), 3)} м³.`,
-      h1: `Расчет бетона для фундамента ${scenario.sizeText}`,
-      intro: `${introLead} Для фундамента ${scenario.sizeText} уже подставлены длина ленты, ширина и высота бетонирования, поэтому итоговая кубатура считается по реальной формуле, а не по шаблонной вставке текста.`,
-      intro2: `Страница заточена под запросы вида «сколько бетона нужно на фундамент ${scenario.sizeText}» и показывает конкретный объём ${formatRu(finalVolume, 3)} м³. После проверки пользователь может сразу перейти в основной калькулятор фундамента.`,
-      body1: `Для сценария ${scenarioDescriptor(cluster, scenario)} ключевой параметр — суммарная длина ленты ${scenario.length} м. Именно она чаще всего теряется в общих статьях, где говорят о площади дома, но не переводят её в реальную кубатуру бетона.`,
-      body2: `В этом кейсе итоговый объём получен по той же логике, что и в существующем калькуляторе: длина умножается на ширину, высоту и коэффициент запаса. Поэтому страница полезна не только для SEO, но и как быстрый инженерный ориентир.`,
-      body3: `Если проект отличается по высоте ленты или ширине основания, цифры можно тут же изменить в форме. Это сохраняет пользу страницы и не превращает её в статичный текст без практического выхода.`,
-      exampleText: `При текущих параметрах фундамент ${scenario.sizeText} требует ${formatRu(finalVolume, 3)} м³ бетона. Дополнительно можно ориентироваться на ${formatRu((finalVolume * 320) / 50, 1)} мешков цемента по 50 кг, если расчёт нужен для собственной смеси.`
-    };
-  }
-
-  if (cluster.id === 'slab-beton') {
-    const finalVolume = scenario.length * scenario.width * scenario.height * (1 + scenario.reserve / 100);
-    return {
-      title: `Сколько бетона нужно на ${scenario.object} ${scenario.sizeText} — ${formatRu(finalVolume, 3)} м³`,
-      description: `Расчёт бетона для ${scenario.object} ${scenario.sizeText}: площадь ${formatRu(scenario.length * scenario.width, 2)} м², толщина ${formatRu(scenario.height * 100, 0)} см, итог ${formatRu(finalVolume, 3)} м³.`,
-      h1: `Сколько бетона нужно на ${scenario.object} ${scenario.sizeText}`,
-      intro: `${introLead} В кейсе для ${scenario.object} ${scenario.sizeText} уже задана площадь ${formatRu(scenario.length * scenario.width, 2)} м² и толщина ${formatRu(scenario.height * 100, 0)} см, поэтому объём бетона получается сразу после открытия страницы.`,
-      intro2: `Такая страница выглядит как готовый расчёт для реального объекта, а не как статья о бетоне. Итоговый объём ${formatRu(finalVolume, 3)} м³ можно пересчитать прямо в встроенной форме без перехода на другой URL.`,
-      body1: `По long-tail запросам о плитах, дорожках и площадках пользователю обычно нужна конкретная кубатура. Здесь она уже рассчитана для сценария ${scenarioDescriptor(cluster, scenario)}, что делает страницу полезной и для поиска, и для практики.`,
-      body2: `Формула остаётся прозрачной: площадь участка переводится в объём через толщину слоя. За счёт этого пользователь понимает, откуда берётся результат ${formatRu(finalVolume, 3)} м³, и может легко проверить его сам.`,
-      body3: `Если объект состоит из нескольких прямоугольников, расчёт можно повторить по частям. Но для типовых плит и площадок эта страница уже даёт готовую цифру без промежуточных шагов.`,
-      exampleText: `Для ${scenario.object} ${scenario.sizeText} площадь составляет ${formatRu(scenario.length * scenario.width, 2)} м². При толщине ${formatRu(scenario.height * 100, 0)} см и запасе ${scenario.reserve}% получается ${formatRu(finalVolume, 3)} м³ бетона.`
-    };
-  }
-
-  if (cluster.id === 'screed') {
-    const area = scenario.length * scenario.width;
-    const mass = area * scenario.thickness * scenario.consumption * (1 + scenario.reserve / 100);
-    return {
-      title: `Сколько нужно смеси на стяжку ${formatRu(scenario.thickness / 10, 0)} см ${scenario.sizeText} — ${formatRu(mass, 1)} кг`,
-      description: `Расчёт смеси на стяжку ${formatRu(scenario.thickness / 10, 0)} см для ${scenario.sizeText}: площадь ${formatRu(area, 2)} м², расход ${scenario.consumption} кг/м²/мм, итог ${formatRu(mass, 1)} кг.`,
-      h1: `Сколько нужно смеси на стяжку ${formatRu(scenario.thickness / 10, 0)} см на ${scenario.sizeText}`,
-      intro: `${introLead} Для стяжки на ${scenario.sizeText} уже рассчитана площадь ${formatRu(area, 2)} м², а результат пересчитан в массу сухой смеси по заданной толщине ${formatRu(scenario.thickness / 10, 0)} см.`,
-      intro2: `Это полезнее обычной SEO-страницы, потому что пользователь сразу видит реальный расход ${formatRu(mass, 1)} кг и может перевести его в мешки, а не только читать общие советы о стяжке пола.`,
-      body1: `В запросах по стяжке почти всегда фигурируют площадь и толщина слоя. Поэтому для сценария ${scenarioDescriptor(cluster, scenario)} страница сразу показывает оба параметра и итоговую массу смеси.`,
-      body2: `Если изменить среднюю толщину хотя бы на 1 см, итоговый расход меняется заметно. Именно поэтому такие long-tail страницы хорошо работают: они дают готовый ответ на конкретный инженерный вопрос.`,
-      body3: `Здесь используется тот же принцип, что и в основном калькуляторе стяжки: площадь умножается на толщину в миллиметрах, норму расхода и запас. Пользователь видит расчёт в явном виде и может проверить его вручную.`,
-      exampleText: `Для площади ${formatRu(area, 2)} м² и толщины ${formatRu(scenario.thickness / 10, 0)} см получается ${formatRu(mass, 1)} кг смеси. Это около ${formatRu(mass / 25, 0)} мешков по 25 кг или ${formatRu(mass / 40, 0)} мешков по 40 кг.`
-    };
-  }
-
-  if (cluster.id === 'tile') {
-    const area = scenario.length * scenario.width;
-    const tileArea = (scenario.tileLength / 1000) * (scenario.tileWidth / 1000);
-    const finalTiles = area / tileArea * (1 + scenario.reserve / 100);
-    return {
-      title: `Расчет плитки для ${scenario.object} ${scenario.sizeText} — ${formatRu(finalTiles, 0)} плиток`,
-      description: `Расчёт плитки для ${scenario.object} ${scenario.sizeText}: площадь ${formatRu(area, 2)} м², формат ${scenario.tileLength}×${scenario.tileWidth} мм, итог ${formatRu(finalTiles, 0)} плиток с запасом.`,
-      h1: `Расчет плитки для ${scenario.object} ${scenario.sizeText}`,
-      intro: `${introLead} Для страницы уже задан формат плитки ${scenario.tileLength}×${scenario.tileWidth} мм, поэтому расчёт зависит не только от площади ${scenario.sizeText}, но и от реального размера облицовочного материала.`,
-      intro2: `За счёт этого результат ${formatRu(finalTiles, 0)} плиток выглядит как полноценный практический кейс. Пользователь может проверить другой формат плитки прямо во встроенной форме и увидеть новое число.`,
-      body1: `В long-tail запросах о плитке важно показать не просто площадь ванной или кухни, а ещё и размер самой плитки. Без этого страница была бы текстовой копией, а не отдельным расчётным сценарием.`,
-      body2: `Для ${scenario.object} ${scenario.sizeText} итог меняется, если выбрать другой формат плитки или другой запас на подрезку. Поэтому страница строится вокруг реальных вычислений, а не вокруг набора одинаковых абзацев.`,
-      body3: `После оценки количества плитки пользователь обычно переходит к плиточному клею и затирке. Такая логика помогает расширять кластер отделки без ручного создания десятков статей.`,
-      exampleText: `При площади ${formatRu(area, 2)} м² и формате ${scenario.tileLength}×${scenario.tileWidth} мм нужно около ${formatRu(finalTiles, 0)} плиток. Из них примерно ${formatRu(finalTiles - (area / tileArea), 0)} плиток приходятся на запас и подрезку.`
-    };
-  }
-
-  if (cluster.id === 'insulation') {
-    const finalVolume = scenario.area * (scenario.thickness / 1000) * (1 + scenario.reserve / 100);
-    return {
-      title: `Расчет утеплителя для ${scenario.object} ${scenario.sizeText} ${scenario.thickness} мм — ${formatRu(finalVolume, 3)} м³`,
-      description: `Расчёт утеплителя для ${scenario.object} ${scenario.sizeText}: толщина ${scenario.thickness} мм, запас ${scenario.reserve}%, итог ${formatRu(finalVolume, 3)} м³ утеплителя.`,
-      h1: `Расчет утеплителя для ${scenario.object} ${scenario.sizeText} толщиной ${scenario.thickness} мм`,
-      intro: `${introLead} В этом сценарии уже задана площадь ${scenario.sizeText} и рабочая толщина ${scenario.thickness} мм, поэтому пользователь сразу получает не общий совет по утеплению, а кубатуру материала для своего случая.`,
-      intro2: `Итоговый объём ${formatRu(finalVolume, 3)} м³ делает страницу самостоятельным расчётным URL. При изменении толщины утеплителя или площади значения пересчитываются на месте через встроенную форму.`,
-      body1: `Long-tail запросы по утеплению почти всегда содержат площадь фасада или стен и толщину слоя. Именно эти параметры сильнее всего влияют на объём материала и поэтому вынесены в основу сценария.`,
-      body2: `Для страницы ${scenarioDescriptor(cluster, scenario)} результат не генерируется из шаблонного текста. Он строится по реальным входным значениям и сразу показывает, как меняется кубатура утеплителя при другом слое.`,
-      body3: `После такого расчёта пользователь обычно идёт в теплопотери или фасадные работы. Поэтому page работает и как поисковый landing, и как вход в основной кластер утепления.`,
-      exampleText: `Для площади ${scenario.sizeText} и толщины ${scenario.thickness} мм нужен объём ${formatRu(finalVolume, 3)} м³ утеплителя. Если оставить ту же площадь, но увеличить слой, итоговая кубатура вырастет пропорционально.`
-    };
-  }
-
-  const finalBudget = scenario.area * scenario.price * (1 + scenario.reserve / 100);
   return {
-    title: `Стоимость ремонта квартиры ${scenario.sizeText} — ${formatRu(finalBudget, 0)} ₽`,
-    description: `Расчёт стоимости ремонта квартиры ${scenario.sizeText}: ставка ${formatRu(scenario.price, 0)} ₽/м², резерв ${scenario.reserve}%, итог ${formatRu(finalBudget, 0)} ₽.`,
-    h1: `Стоимость ремонта квартиры ${scenario.sizeText}`,
-    intro: `${introLead} Для квартиры площадью ${scenario.sizeText} уже задана ставка ${formatRu(scenario.price, 0)} ₽ за м², поэтому пользователь сразу видит ориентировочный бюджет ремонта без промежуточных вычислений.`,
-    intro2: `Итоговая смета ${formatRu(finalBudget, 0)} ₽ отличается от других страниц не только числом площади, но и фактическим размером бюджета, резерва и среднего бюджета на квадратный метр.`,
-    body1: `В long-tail запросах о ремонте квартиры человек почти всегда хочет понять порядок бюджета для своей площади. Поэтому здесь результат привязан к конкретному размеру квартиры, а не к абстрактной формуле без цифр.`,
-    body2: `На странице расчёт уже разложен на площадь, ставку и резерв. Это делает её полезной для сравнения сценариев: можно быстро проверить квартиру 40 м², 50 м² или 60 м² без ручного пересчёта.`,
-    body3: `После грубой оценки бюджета пользователь обычно идёт в смежные расчёты по плитке, краске или стяжке. За счёт этого сценарная страница участвует в общей навигации по кластеру ремонта.`,
-    exampleText: `При площади ${scenario.sizeText}, ставке ${formatRu(scenario.price, 0)} ₽ за м² и резерве ${scenario.reserve}% ориентировочная смета составляет ${formatRu(finalBudget, 0)} ₽. Это можно использовать как стартовую цифру перед детализацией по материалам и работам.`
+    unit: 'кг',
+    resultNumber: finalMass,
+    title: `Расчёт стяжки: ${page.scenario} ${page.sizeText}, ${formatRu(finalMass, 1)} кг`,
+    description: `${page.scenario}: ${page.parameterText}. Нужно ${formatRu(finalMass, 1)} кг смеси, включая запас ${page.reserve}%.`,
+    h1: `Сколько смеси нужно: ${page.scenario} ${page.parameterText}`,
+    liveResult: `Результат: ${formatRu(finalMass, 1)} кг смеси на площадь ${formatRu(area, 2)} м².`,
+    summary: `Для сценария «${page.scenario}» потребуется ${formatRu(finalMass, 1)} кг сухой смеси. Расчёт учитывает площадь ${formatRu(area, 2)} м², слой ${formatRu(page.thickness / 10, 0)} см и норму ${page.consumption} кг/м² на 1 мм.`,
+    inputs: [
+      `Длина: ${formatRu(page.length, 1)} м`,
+      `Ширина: ${formatRu(page.width, 1)} м`,
+      `Площадь пола: ${formatRu(area, 2)} м²`,
+      `Средняя толщина: ${formatRu(page.thickness / 10, 0)} см`
+    ],
+    formula: `M = ${formatRu(area, 2)} × ${page.thickness} × ${page.consumption} × (1 + ${page.reserve} / 100)`,
+    results: [
+      `Расход без запаса: ${formatRu(cleanMass, 1)} кг`,
+      `Запас: ${formatRu(reserveMass, 1)} кг`,
+      `Итого: ${formatRu(finalMass, 1)} кг`,
+      `Мешки по 25 кг: ${formatRu(finalMass / 25, 0)} шт.`,
+      `Мешки по 40 кг: ${formatRu(finalMass / 40, 0)} шт.`
+    ],
+    explanation: `Расход стяжки считается через толщину в миллиметрах, потому что производители обычно дают норму на 1 мм слоя. Для этой площади каждый дополнительный сантиметр добавляет около ${formatRu(area * 10 * page.consumption, 1)} кг смеси до запаса.`,
+    recommendation: pick(page.slug, [
+      `Если основание имеет перепады, берите среднюю толщину по маякам, а не минимальную точку.`,
+      `Для гаража и влажных зон лучше оставить запас отдельной строкой: так проще увидеть, сколько добавлено на неровности.`,
+      `Перед закупкой сравните итог в мешках с фасовкой конкретной смеси, потому что округление упаковок влияет на бюджет.`
+    ])
   };
+}
+
+function tileMetrics(page) {
+  const area = page.length * page.width;
+  const tileArea = page.tileLength / 1000 * page.tileWidth / 1000;
+  const cleanTiles = area / tileArea;
+  const reserveTiles = cleanTiles * page.reserve / 100;
+  const finalTiles = Math.ceil(cleanTiles + reserveTiles);
+
+  return {
+    unit: 'шт.',
+    resultNumber: finalTiles,
+    title: `Расчёт плитки: ${page.scenario} ${page.parameterText}, ${finalTiles} шт.`,
+    description: `${page.scenario}: площадь ${formatRu(area, 2)} м², формат ${page.tileLength}×${page.tileWidth} мм. Итог ${finalTiles} плиток с запасом ${page.reserve}%.`,
+    h1: `Сколько плитки нужно: ${page.scenario} ${page.sizeText}`,
+    liveResult: `Результат: ${finalTiles} плиток на площадь ${formatRu(area, 2)} м².`,
+    summary: `Для задачи «${page.scenario}» нужно ${finalTiles} плиток. Без резерва получается ${formatRu(cleanTiles, 1)} шт., запас на подрезку добавляет ${formatRu(reserveTiles, 1)} шт.`,
+    inputs: [
+      `Длина поверхности: ${formatRu(page.length, 1)} м`,
+      `Ширина или высота: ${formatRu(page.width, 1)} м`,
+      `Площадь облицовки: ${formatRu(area, 2)} м²`,
+      `Формат плитки: ${page.tileLength}×${page.tileWidth} мм`
+    ],
+    formula: `N = (${formatRu(area, 2)} / ${formatRu(tileArea, 3)}) × (1 + ${page.reserve} / 100)`,
+    results: [
+      `Площадь одной плитки: ${formatRu(tileArea, 3)} м²`,
+      `Количество без запаса: ${formatRu(cleanTiles, 1)} шт.`,
+      `Запас: ${formatRu(reserveTiles, 1)} шт.`,
+      `Итого с округлением вверх: ${finalTiles} шт.`
+    ],
+    explanation: `Здесь итог зависит не только от площади, но и от формата плитки. На той же поверхности плитка 600×600 мм и 200×300 мм даст совершенно разное количество штук.`,
+    recommendation: pick(page.slug, [
+      `Для диагональной раскладки или большого числа углов увеличьте запас в форме и пересчитайте результат.`,
+      `Если материал продаётся коробками, разделите итог на количество плиток в упаковке и округлите вверх.`,
+      `Для фартука и душевой зоны проверьте высоту рядов: иногда один дополнительный ряд меняет закупку сильнее, чем общий процент запаса.`
+    ])
+  };
+}
+
+function insulationMetrics(page) {
+  const cleanVolume = page.area * page.thickness / 1000;
+  const reserveVolume = cleanVolume * page.reserve / 100;
+  const finalVolume = cleanVolume + reserveVolume;
+
+  return {
+    unit: 'м³',
+    resultNumber: finalVolume,
+    title: `Расчёт утеплителя: ${page.scenario} ${page.parameterText}, ${formatRu(finalVolume, 3)} м³`,
+    description: `${page.scenario}: площадь ${formatRu(page.area, 1)} м², толщина ${page.thickness} мм. Нужно ${formatRu(finalVolume, 3)} м³ утеплителя.`,
+    h1: `Сколько утеплителя нужно: ${page.scenario} ${page.parameterText}`,
+    liveResult: `Результат: ${formatRu(finalVolume, 3)} м³ утеплителя.`,
+    summary: `Для сценария «${page.scenario}» потребуется ${formatRu(finalVolume, 3)} м³ утеплителя. Чистый объём: ${formatRu(cleanVolume, 3)} м³, резерв: ${formatRu(reserveVolume, 3)} м³.`,
+    inputs: [
+      `Площадь утепления: ${formatRu(page.area, 1)} м²`,
+      `Толщина слоя: ${page.thickness} мм`,
+      `Толщина в метрах: ${formatRu(page.thickness / 1000, 3)} м`,
+      `Запас: ${page.reserve}%`
+    ],
+    formula: `V = ${formatRu(page.area, 1)} × ${formatRu(page.thickness / 1000, 3)} × (1 + ${page.reserve} / 100)`,
+    results: [
+      `Объём без запаса: ${formatRu(cleanVolume, 3)} м³`,
+      `Запас: ${formatRu(reserveVolume, 3)} м³`,
+      `Итого: ${formatRu(finalVolume, 3)} м³`,
+      `Ориентир при упаковке 0,3 м³: ${formatRu(finalVolume / 0.3, 0)} упаковок`
+    ],
+    explanation: `Объём утеплителя растёт пропорционально толщине. Если оставить ту же площадь, но заменить 100 мм на 150 мм, кубатура увеличится в полтора раза.`,
+    recommendation: pick(page.slug, [
+      `Для фасада вычитайте крупные проёмы до расчёта, а запас оставляйте на откосы и углы.`,
+      `У разных производителей объём пачки отличается, поэтому основной итог оставлен в кубометрах.`,
+      `Если утепление идёт в два слоя, считайте суммарную толщину или каждый слой отдельно при разном материале.`
+    ])
+  };
+}
+
+function poolMetrics(page) {
+  const volume = page.length * page.width * page.depth;
+  const liters = volume * 1000;
+
+  return {
+    unit: 'м³',
+    resultNumber: volume,
+    title: `Объём бассейна: ${page.scenario} ${page.parameterText}, ${formatRu(volume, 2)} м³`,
+    description: `${page.scenario}: ${page.parameterText}. Объём воды ${formatRu(volume, 2)} м³, примерно ${formatRu(liters, 0)} л.`,
+    h1: `Расчёт объёма воды: ${page.scenario} ${page.parameterText}`,
+    liveResult: `Результат: ${formatRu(volume, 2)} м³ воды, это примерно ${formatRu(liters, 0)} л.`,
+    summary: `Для задачи «${page.scenario}» объём чаши составляет ${formatRu(volume, 2)} м³, или примерно ${formatRu(liters, 0)} л воды.`,
+    inputs: [
+      `Длина чаши: ${formatRu(page.length, 1)} м`,
+      `Ширина чаши: ${formatRu(page.width, 1)} м`,
+      `Средняя глубина: ${formatRu(page.depth, 1)} м`,
+      `Площадь зеркала воды: ${formatRu(page.length * page.width, 2)} м²`
+    ],
+    formula: `V = ${formatRu(page.length, 1)} × ${formatRu(page.width, 1)} × ${formatRu(page.depth, 1)}`,
+    results: [
+      `Объём воды: ${formatRu(volume, 2)} м³`,
+      `Литры: ${formatRu(liters, 0)} л`,
+      `Ориентировочная масса воды: ${formatRu(volume, 2)} т`,
+      `При заполнении 2 м³/ч потребуется около ${formatRu(volume / 2, 1)} ч`
+    ],
+    explanation: `Для бассейна важен не только размер в плане, но и средняя глубина. Она влияет на подбор фильтрации, химию и время заполнения чаши.`,
+    recommendation: pick(page.slug, [
+      `Если дно имеет уклон, вместо максимальной глубины используйте среднюю рабочую глубину.`,
+      `Для чаш сложной формы этот расчёт подходит как предварительный ориентир перед детальной разбивкой на зоны.`,
+      `Литраж добавлен отдельно, потому что оборудование и химия часто подбираются именно по литрам.`
+    ])
+  };
+}
+
+const metricByType = {
+  beton: concreteMetrics,
+  smesi: screedMetrics,
+  plitka: tileMetrics,
+  uteplitel: insulationMetrics,
+  bassein: poolMetrics
+};
+
+function variantsForFamily(family) {
+  const rows = [];
+  family.scenarios.forEach((scenario) => {
+    if (family.family === 'foundation') {
+      family.sizes.forEach((size) => family.widths.forEach((width) => family.heights.forEach((height) => family.reserves.forEach((reserve) => {
+        rows.push(family.build({ scenario, size, width, height, reserve }));
+      }))));
+    }
+    if (family.family === 'concrete-flat') {
+      family.sizes.forEach((size) => family.heights.forEach((height) => family.reserves.forEach((reserve) => {
+        rows.push(family.build({ scenario, size, height, reserve }));
+      })));
+    }
+    if (family.family === 'screed') {
+      family.sizes.forEach((size) => family.thicknesses.forEach((thickness) => family.consumptions.forEach((consumption) => family.reserves.forEach((reserve) => {
+        rows.push(family.build({ scenario, size, thickness, consumption, reserve }));
+      }))));
+    }
+    if (family.family === 'tile') {
+      family.sizes.forEach((size) => family.formats.forEach((format) => family.reserves.forEach((reserve) => {
+        rows.push(family.build({ scenario, size, format, reserve }));
+      })));
+    }
+    if (family.family === 'insulation') {
+      family.areas.forEach((area) => family.thicknesses.forEach((thickness) => family.reserves.forEach((reserve) => {
+        rows.push(family.build({ scenario, area, thickness, reserve }));
+      })));
+    }
+    if (family.family === 'pool') {
+      family.sizes.forEach((size) => family.depths.forEach((depth) => {
+        rows.push(family.build({ scenario, size, depth }));
+      }));
+    }
+  });
+
+  return rows.map((page) => ({ ...page, family: family.family, calcType: family.calcType, titleType: family.titleType, demand: family.demand }));
+}
+
+function enrichPage(page) {
+  const slugSource = `${page.scenario}-${page.parameterText}`;
+  const slug = translit(slugSource);
+  const metrics = metricByType[page.calcType]({ ...page, slug });
+  return {
+    ...page,
+    slug,
+    metrics,
+    intentKey: `${page.family}|${page.scenario}`,
+    inputKey: `${page.family}|${page.scenario}|${page.parameterText}`,
+    resultKey: `${page.family}|${page.scenario}|${Math.round(metrics.resultNumber * 10) / 10}${metrics.unit}`,
+    signature: `${page.scenario}|${page.parameterText}|${metrics.formula}|${metrics.results.slice(0, 3).join('|')}`
+  };
+}
+
+function qualityScore(page, seen) {
+  let score = 38;
+  score += page.demand * 5;
+  score += page.parameterText.length > 12 ? 8 : 0;
+  score += page.metrics.results.length >= 4 ? 8 : 0;
+  score += page.metrics.explanation.length > 120 ? 8 : 0;
+  score += page.metrics.recommendation.length > 80 ? 7 : 0;
+  score += page.metrics.resultNumber > 0 ? 8 : -20;
+  score += seen.intentCounts.get(page.intentKey) < 80 ? 5 : -8;
+  score += seen.resultKeys.has(page.resultKey) ? -18 : 0;
+  score += seen.inputKeys.has(page.inputKey) ? -30 : 0;
+  return score;
+}
+
+function buildCandidates() {
+  const candidates = pageFamilies.flatMap(variantsForFamily).map(enrichPage);
+  candidates.sort((a, b) => {
+    const aHash = Math.abs(hashString(a.signature));
+    const bHash = Math.abs(hashString(b.signature));
+    return (b.demand - a.demand) || (aHash - bHash);
+  });
+  return candidates;
+}
+
+function selectPages(candidates) {
+  const seen = {
+    slugs: new Set(),
+    inputKeys: new Set(),
+    resultKeys: new Set(),
+    signatures: new Set(),
+    intentCounts: new Map()
+  };
+  const selected = [];
+  let indexed = 0;
+  const familyIndexCounts = new Map();
+  const familyCreateCounts = new Map();
+  const families = [...new Set(candidates.map((candidate) => candidate.family))];
+  const familyIndexCap = Math.ceil(INDEXED_TARGET / families.length);
+  const familyCreateCap = Math.ceil(MAX_PAGES / families.length) + 20;
+
+  const buckets = families.map((family) => candidates.filter((candidate) => candidate.family === family));
+  let cursor = 0;
+
+  while (selected.length < MAX_PAGES && indexed < INDEXED_TARGET && buckets.some((bucket) => bucket.length > 0)) {
+    const bucket = buckets[cursor % buckets.length];
+    cursor += 1;
+
+    if (!bucket.length) {
+      continue;
+    }
+
+    const candidate = bucket.shift();
+    const familyIndexed = familyIndexCounts.get(candidate.family) || 0;
+    const familyCreated = familyCreateCounts.get(candidate.family) || 0;
+
+    if (familyIndexed >= familyIndexCap || familyCreated >= familyCreateCap) {
+      continue;
+    }
+
+    const currentIntentCount = seen.intentCounts.get(candidate.intentKey) || 0;
+    seen.intentCounts.set(candidate.intentKey, currentIntentCount);
+
+    if (seen.slugs.has(candidate.slug) || seen.signatures.has(candidate.signature)) {
+      continue;
+    }
+
+    const score = qualityScore(candidate, seen);
+    if (score < MIN_CREATE_SCORE) {
+      continue;
+    }
+
+    const shouldIndex = score >= MIN_INDEX_SCORE && indexed < INDEXED_TARGET && familyIndexed < familyIndexCap;
+    const page = { ...candidate, qualityScore: score, indexable: shouldIndex };
+    selected.push(page);
+
+    seen.slugs.add(page.slug);
+    seen.inputKeys.add(page.inputKey);
+    seen.signatures.add(page.signature);
+    familyCreateCounts.set(page.family, familyCreated + 1);
+    if (shouldIndex) {
+      indexed += 1;
+      seen.resultKeys.add(page.resultKey);
+      seen.intentCounts.set(page.intentKey, currentIntentCount + 1);
+      familyIndexCounts.set(page.family, familyIndexed + 1);
+    }
+  }
+
+  let weakCursor = 0;
+  while (selected.length < MAX_PAGES && buckets.some((bucket) => bucket.length > 0)) {
+    const bucket = buckets[weakCursor % buckets.length];
+    weakCursor += 1;
+    if (!bucket.length) {
+      continue;
+    }
+
+    const candidate = bucket.shift();
+    if (seen.slugs.has(candidate.slug) || seen.signatures.has(candidate.signature)) {
+      continue;
+    }
+
+    const score = qualityScore(candidate, seen);
+    if (score < MIN_CREATE_SCORE) {
+      continue;
+    }
+
+    const page = { ...candidate, qualityScore: score, indexable: false };
+    selected.push(page);
+    seen.slugs.add(page.slug);
+    seen.inputKeys.add(page.inputKey);
+    seen.signatures.add(page.signature);
+  }
+
+  return selected;
 }
 
 function listItems(items) {
   return items.map((item) => `<li>${item}</li>`).join('\n');
 }
 
-function relatedPages(cluster, slug) {
-  return cluster.scenarios
-    .filter((item) => item.slug !== slug)
-    .slice(0, 4)
-    .map((item) => {
-      const scenarioMetrics = calculateMetrics(cluster, item);
-      return `<li><a href="${item.slug}.html">${meta(cluster, item, scenarioMetrics).h1}</a></li>`;
-    })
-    .join('\n');
+function card(title, body) {
+  return `<section class="card">
+      <h2>${title}</h2>
+      ${body}
+    </section>`;
 }
 
-function relatedCalculators(cluster) {
-  return [{ name: cluster.calculatorName, url: cluster.calculatorUrl }, ...cluster.relatedCalculators]
+function dynamicBlocks(page) {
+  const metrics = page.metrics;
+  const blocks = {
+    task: card('Задача', `<p>${metrics.summary}</p>`),
+    calc: card('Расчёт', `<ul class="also-list">${listItems(metrics.inputs)}</ul><p><strong>Формула:</strong> ${metrics.formula}</p>`),
+    result: card('Итоговые значения', `<ul class="also-list">${listItems(metrics.results)}</ul>`),
+    explain: card('Пояснение результата', `<p>${metrics.explanation}</p>`),
+    advice: card('Рекомендация', `<p>${metrics.recommendation}</p>`)
+  };
+  const orders = [
+    ['task', 'calc', 'result', 'explain', 'advice'],
+    ['task', 'result', 'calc', 'advice', 'explain'],
+    ['calc', 'task', 'result', 'explain', 'advice'],
+    ['task', 'explain', 'calc', 'result', 'advice'],
+    ['result', 'task', 'calc', 'advice', 'explain']
+  ];
+  return pick(page.slug, orders).map((key) => blocks[key]).join('\n\n');
+}
+
+function relatedPages(page, allPages) {
+  return allPages
+    .filter((item) => item.indexable && item.family === page.family && item.slug !== page.slug && item.scenario !== page.scenario)
+    .slice(0, 3)
+    .map((item) => `<li><a href="${item.slug}.html">${item.metrics.h1}</a></li>`)
+    .join('\n') || `<li><a href="${calculators[page.calcType].url}">${calculators[page.calcType].name}</a></li>`;
+}
+
+function relatedCalculators(page) {
+  const calculator = calculators[page.calcType];
+  return [{ name: calculator.name, url: calculator.url }, ...calculator.related]
     .map((item) => `<li><a href="${item.url}">${item.name}</a></li>`)
     .join('\n');
 }
 
-function renderPage(cluster, scenario) {
-  const metrics = calculateMetrics(cluster, scenario);
-  const pageMeta = meta(cluster, scenario, metrics);
-  const replacements = {
-    '{{TITLE}}': pageMeta.title,
-    '{{DESCRIPTION}}': pageMeta.description,
-    '{{H1}}': pageMeta.h1,
-    '{{INTRO}}': pageMeta.intro,
-    '{{INTRO_2}}': pageMeta.intro2,
-    '{{RESULT_SUMMARY}}': metrics.summary,
-    '{{INPUT_ITEMS}}': listItems(metrics.inputs),
-    '{{FORMULA}}': metrics.formula,
-    '{{RESULT_ITEMS}}': listItems(metrics.results),
-    '{{RESULT_EXPLANATION}}': metrics.explanation,
-    '{{FORM}}': buildForm(cluster.formPreset, scenario),
-    '{{LIVE_RESULT}}': metrics.liveResult,
-    '{{CALCULATOR_URL}}': cluster.calculatorUrl,
-    '{{BODY_1}}': pageMeta.body1,
-    '{{BODY_2}}': pageMeta.body2,
-    '{{BODY_3}}': pageMeta.body3,
-    '{{EXAMPLE_TEXT}}': pageMeta.exampleText,
-    '{{RELATED_PAGES}}': relatedPages(cluster, scenario.slug),
-    '{{RELATED_CALCULATORS}}': relatedCalculators(cluster)
-  };
-
-  let html = template;
-  Object.entries(replacements).forEach(([key, value]) => {
-    html = html.split(key).join(value);
-  });
-  return html;
+function replaceAll(html, replacements) {
+  return Object.entries(replacements).reduce(
+    (result, [key, value]) => result.split(key).join(value),
+    html
+  );
 }
 
-function renderHub() {
-  const sections = data.clusters.map((cluster) => {
-    const links = cluster.scenarios.map((scenario) => {
-      const scenarioMetrics = calculateMetrics(cluster, scenario);
-      return `<li><a href="${scenario.slug}.html">${meta(cluster, scenario, scenarioMetrics).h1}</a></li>`;
-    }).join('\n');
+function renderPage(page, allPages) {
+  const calculator = calculators[page.calcType];
+  const intro = pick(page.slug, [
+    `Это не справочная статья, а готовый расчёт под конкретный сценарий: ${page.scenario}, ${page.parameterText}.`,
+    `Страница отвечает на прикладной запрос с заданными размерами: ${page.scenario}, ${page.parameterText}.`,
+    `Ниже зафиксированы входные данные и результат, чтобы расчёт можно было проверить без ручной подстановки.`
+  ]);
+  const task = pick(`${page.slug}-task`, [
+    `Страница создана только потому, что сочетание объекта, размеров и результата даёт отдельный смысл для пользователя.`,
+    `Если изменить размеры в форме, итог пересчитается тем же скриптом, который используется в основном калькуляторе.`,
+    `В HTML уже есть формула, исходные параметры и итоговые числа, поэтому робот получает не пустой шаблон, а видимый расчёт.`
+  ]);
+
+  return replaceAll(template, {
+    '{{TITLE}}': page.metrics.title,
+    '{{DESCRIPTION}}': page.metrics.description,
+    '{{ROBOTS_META}}': page.indexable ? '' : '<meta name="robots" content="noindex,follow">',
+    '{{CANONICAL}}': page.indexable ? '' : `<link rel="canonical" href="${calculator.url}">`,
+    '{{H1}}': page.metrics.h1,
+    '{{INTRO}}': intro,
+    '{{TASK}}': task,
+    '{{DYNAMIC_BLOCKS}}': dynamicBlocks(page),
+    '{{FORM}}': buildForm(page),
+    '{{LIVE_RESULT}}': page.metrics.liveResult,
+    '{{CALCULATOR_URL}}': calculator.url,
+    '{{RELATED_PAGES}}': relatedPages(page, allPages),
+    '{{RELATED_CALCULATORS}}': relatedCalculators(page)
+  });
+}
+
+function renderHub(pages) {
+  const grouped = Object.groupBy(pages.filter((page) => page.indexable), (page) => page.family);
+  const sections = Object.entries(grouped).map(([family, items]) => {
+    const sampleLinks = items.slice(0, 12).map((page) => `<li><a href="${page.slug}.html">${page.metrics.h1}</a></li>`).join('\n');
     return `<section class="card">
-      <h2>${cluster.name}</h2>
-      <p>Кластер привязан к странице <a href="${cluster.calculatorUrl}">${cluster.calculatorName}</a> и покрывает long-tail запросы с размерами, толщиной, площадью и типом объекта.</p>
-      <ul class="calc-list">
-        ${links}
-      </ul>
+      <h2>${family}</h2>
+      <p>В индексе оставлены сценарии с отдельным интентом, реальными параметрами и расчётом. Показаны первые 12 страниц кластера.</p>
+      <ul class="calc-list">${sampleLinks}</ul>
     </section>`;
   }).join('\n');
 
@@ -431,7 +767,7 @@ function renderHub() {
     <section class="card">
       <h1>${data.hub.title}</h1>
       <p>${data.hub.description}</p>
-      <p>Хаб собирает сценарные SEO-страницы под запросы с размерами, толщиной слоя, площадью объекта и типом работ. Каждая страница ведёт в основной калькулятор и показывает заранее посчитанные результаты прямо в HTML.</p>
+      <p>Генератор строит кандидаты из востребованных сценариев, отбрасывает дубли по интенту и результату, а в sitemap добавляет только страницы с достаточным качественным скорингом.</p>
     </section>
     ${sections}
     <section class="card">
@@ -442,18 +778,48 @@ function renderHub() {
 </html>`;
 }
 
-ensureDir(outputDir);
+function renderSitemap(indexablePages) {
+  const urls = ['../programmatic/index.html', ...indexablePages.map((page) => `../programmatic/${page.slug}.html`)];
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((url) => `  <url><loc>${url}</loc></url>`).join('\n')}\n</urlset>\n`;
+}
 
-const urls = [];
-data.clusters.forEach((cluster) => {
-  cluster.scenarios.forEach((scenario) => {
-    const fileName = `${scenario.slug}.html`;
-    fs.writeFileSync(path.join(outputDir, fileName), renderPage(cluster, scenario), 'utf8');
-    urls.push(`programmatic/${fileName}`);
-  });
+function writeQualityReport(pages, candidatesCount) {
+  const report = {
+    generatedAt: new Date().toISOString(),
+    candidates: candidatesCount,
+    pages: pages.length,
+    indexable: pages.filter((page) => page.indexable).length,
+    noindex: pages.filter((page) => !page.indexable).length,
+    minIndexScore: MIN_INDEX_SCORE,
+    minCreateScore: MIN_CREATE_SCORE,
+    examples: pages.filter((page) => page.indexable).slice(0, 30).map((page) => ({
+      url: `programmatic/${page.slug}.html`,
+      score: page.qualityScore,
+      intent: page.intentKey,
+      result: `${formatRu(page.metrics.resultNumber, 2)} ${page.metrics.unit}`
+    }))
+  };
+  fs.writeFileSync(path.join(seoDir, 'programmatic-quality-report.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+}
+
+ensureDir(outputDir);
+ensureDir(seoDir);
+cleanGeneratedPages(outputDir);
+
+const candidates = buildCandidates();
+const pages = selectPages(candidates);
+const indexablePages = pages.filter((page) => page.indexable);
+
+pages.forEach((page) => {
+  fs.writeFileSync(path.join(outputDir, `${page.slug}.html`), renderPage(page, pages), 'utf8');
 });
 
-fs.writeFileSync(path.join(outputDir, 'index.html'), renderHub(), 'utf8');
-fs.writeFileSync(path.join(root, 'seo', 'programmatic-urls.txt'), urls.join('\n'), 'utf8');
+fs.writeFileSync(path.join(outputDir, 'index.html'), renderHub(pages), 'utf8');
+fs.writeFileSync(path.join(seoDir, 'programmatic-urls.txt'), `${indexablePages.map((page) => `programmatic/${page.slug}.html`).join('\n')}\n`, 'utf8');
+fs.writeFileSync(path.join(seoDir, 'sitemap.xml'), renderSitemap(indexablePages), 'utf8');
+writeQualityReport(pages, candidates.length);
 
-console.log(`Generated ${urls.length} programmatic pages.`);
+console.log(`Candidates: ${candidates.length}`);
+console.log(`Generated pages: ${pages.length}`);
+console.log(`Indexable pages: ${indexablePages.length}`);
+console.log(`Noindex pages: ${pages.length - indexablePages.length}`);

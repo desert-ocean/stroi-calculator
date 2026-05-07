@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Расчёт бетона: ленточный фундамент пристройки 10×12 м, 23,76 м³</title>
+  <meta name="description" content="ленточный фундамент пристройки: лента 54 м, 0,5×0,8 м. Итоговый объём бетона 23,76 м³ с запасом 10%.">
+  
+  
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <h1>Сколько бетона нужно: ленточный фундамент пристройки 10×12 м</h1>
+      <p>Это не справочная статья, а готовый расчёт под конкретный сценарий: ленточный фундамент пристройки, лента 54 м, 0,5×0,8 м.</p>
+      <p>Страница создана только потому, что сочетание объекта, размеров и результата даёт отдельный смысл для пользователя.</p>
+    </section>
+
+    <section class="card">
+      <h2>Задача</h2>
+      <p>Для задачи «ленточный фундамент пристройки 10×12 м» расчёт даёт 23,76 м³ бетона. Чистый объём по геометрии: 21,6 м³, резерв: 2,16 м³.</p>
+    </section>
+
+<section class="card">
+      <h2>Пояснение результата</h2>
+      <p>Для ленточного фундамента результат зависит от суммарной длины ленты, а не только от внешнего размера здания. В этом сценарии в расчёт заложено 54 м рабочей длины.</p>
+    </section>
+
+<section class="card">
+      <h2>Расчёт</h2>
+      <ul class="also-list"><li>Суммарная длина ленты: 54 м</li>
+<li>Ширина ленты: 0,5 м</li>
+<li>Высота бетонирования: 0,8 м</li>
+<li>Запас: 10%</li></ul><p><strong>Формула:</strong> V = 54 × 0,5 × 0,8 × (1 + 10 / 100)</p>
+    </section>
+
+<section class="card">
+      <h2>Итоговые значения</h2>
+      <ul class="also-list"><li>Чистый объём: 21,6 м³</li>
+<li>Запас: 2,16 м³</li>
+<li>Итого к заказу: 23,76 м³</li>
+<li>Ориентир по цементу: 7 603 кг, или 152,1 мешка по 50 кг</li>
+<li>При миксере 7 м³: около 3,4 рейса</li></ul>
+    </section>
+
+<section class="card">
+      <h2>Рекомендация</h2>
+      <p>Перед заказом бетона проверьте высоту опалубки и фактическую толщину слоя: именно эти значения чаще всего дают лишний объём.</p>
+    </section>
+
+    <section class="card">
+      <h2>Изменить параметры</h2>
+      <form id="calc-form" data-type="beton">
+        <div class="form-grid">
+<div>
+            <label for="length">Длина, м</label>
+            <input id="length" type="number" step="0.1" value="54">
+            <p>Для ленты это суммарная длина, для плиты или дорожки - длина участка.</p>
+          </div>
+<div>
+            <label for="width">Ширина, м</label>
+            <input id="width" type="number" step="0.1" value="0.5">
+            <p>Ширина ленты, плиты, дорожки или площадки.</p>
+          </div>
+<div>
+            <label for="height">Толщина или высота, м</label>
+            <input id="height" type="number" step="0.01" value="0.8">
+            <p>Для плиты это толщина, для ленты - высота бетонирования.</p>
+          </div>
+<div>
+            <label for="reserve">Запас, %</label>
+            <input id="reserve" type="number" step="0.1" value="10">
+            <p>Резерв на потери, подачу и неточные замеры.</p>
+          </div>
+        </div>
+        <button type="submit">Рассчитать</button>
+      </form>
+      <h2 id="result">Результат: 23,76 м³ бетона.</h2>
+      <p><a href="../calculators/kalkulyator-betona.html">Открыть основной калькулятор</a></p>
+    </section>
+
+    <section class="card">
+      <h2>Похожие расчёты</h2>
+      <ul class="also-list">
+        <li><a href="fundament-garazha-lenta-30-m-0-3x0-8-m.html">Сколько бетона нужно: фундамент гаража 7×8 м</a></li>
+<li><a href="rostverk-pod-karkasnyy-dom-lenta-60-m-0-3x1-m.html">Сколько бетона нужно: ростверк под каркасный дом 12×12 м</a></li>
+<li><a href="fundament-garazha-lenta-45-m-0-4x1-4-m.html">Сколько бетона нужно: фундамент гаража 9×9 м</a></li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Полезные калькуляторы</h2>
+      <ul class="also-list">
+        <li><a href="../calculators/kalkulyator-betona.html">Калькулятор бетона</a></li>
+<li><a href="../calculators/kalkulyator-fundamenta.html">Калькулятор фундамента</a></li>
+<li><a href="../calculators/kalkulyator-obema-betona.html">Калькулятор объёма бетона</a></li>
+<li><a href="../calculators/kalkulyator-rashoda-cementa.html">Калькулятор расхода цемента</a></li>
+      </ul>
+      <p><a href="index.html">Все готовые расчёты</a></p>
+      <p><a href="../index.html">На главную</a></p>
+    </section>
+  </main>
+  <script src="../assets/script.js"></script>
+</body>
+</html>

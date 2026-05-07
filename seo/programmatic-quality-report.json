@@ -1,0 +1,191 @@
+{
+  "generatedAt": "2026-05-07T08:26:31.229Z",
+  "candidates": 17622,
+  "pages": 1400,
+  "indexable": 1200,
+  "noindex": 200,
+  "minIndexScore": 78,
+  "minCreateScore": 62,
+  "examples": [
+    {
+      "url": "programmatic/styazhka-pola-v-dome-ploschad-42-m-sloy-6-sm.html",
+      "score": 107,
+      "intent": "screed|стяжка пола в доме",
+      "result": "4 490,64 кг"
+    },
+    {
+      "url": "programmatic/keramogranit-v-koridor-6-m-format-300x600-mm.html",
+      "score": 107,
+      "intent": "tile|керамогранит в коридор",
+      "result": "38 шт."
+    },
+    {
+      "url": "programmatic/betonnaya-ploschadka-pod-avto-ploschad-16-m-sloy-8-sm.html",
+      "score": 102,
+      "intent": "concrete-flat|бетонная площадка под авто",
+      "result": "1,38 м³"
+    },
+    {
+      "url": "programmatic/uteplenie-sten-kottedzha-96-m-sloy-50-mm.html",
+      "score": 102,
+      "intent": "insulation|утепление стен коттеджа",
+      "result": "5,14 м³"
+    },
+    {
+      "url": "programmatic/fundament-garazha-lenta-30-m-0-3x0-8-m.html",
+      "score": 102,
+      "intent": "foundation|фундамент гаража",
+      "result": "7,92 м³"
+    },
+    {
+      "url": "programmatic/basseyn-dlya-bani-5x3-m-glubina-1-2-m.html",
+      "score": 97,
+      "intent": "pool|бассейн для бани",
+      "result": "18 м³"
+    },
+    {
+      "url": "programmatic/styazhka-na-kuhne-ploschad-56-m-sloy-5-sm.html",
+      "score": 107,
+      "intent": "screed|стяжка на кухне",
+      "result": "5 443,2 кг"
+    },
+    {
+      "url": "programmatic/keramogranit-v-koridor-9-m-format-400x400-mm.html",
+      "score": 107,
+      "intent": "tile|керамогранит в коридор",
+      "result": "61 шт."
+    },
+    {
+      "url": "programmatic/plita-pod-garazh-ploschad-80-m-sloy-12-sm.html",
+      "score": 102,
+      "intent": "concrete-flat|плита под гараж",
+      "result": "10,37 м³"
+    },
+    {
+      "url": "programmatic/uteplenie-sten-kottedzha-60-m-sloy-50-mm.html",
+      "score": 102,
+      "intent": "insulation|утепление стен коттеджа",
+      "result": "3,3 м³"
+    },
+    {
+      "url": "programmatic/rostverk-pod-karkasnyy-dom-lenta-60-m-0-3x1-m.html",
+      "score": 102,
+      "intent": "foundation|ростверк под каркасный дом",
+      "result": "19,8 м³"
+    },
+    {
+      "url": "programmatic/kupel-7x3-5-m-glubina-1-4-m.html",
+      "score": 97,
+      "intent": "pool|купель",
+      "result": "34,3 м³"
+    },
+    {
+      "url": "programmatic/styazhka-pola-v-dome-ploschad-16-m-sloy-7-sm.html",
+      "score": 107,
+      "intent": "screed|стяжка пола в доме",
+      "result": "2 177,28 кг"
+    },
+    {
+      "url": "programmatic/plitka-na-stenu-dushevoy-8-m-format-300x600-mm.html",
+      "score": 107,
+      "intent": "tile|плитка на стену душевой",
+      "result": "52 шт."
+    },
+    {
+      "url": "programmatic/betonnaya-ploschadka-pod-avto-ploschad-120-m-sloy-20-sm.html",
+      "score": 102,
+      "intent": "concrete-flat|бетонная площадка под авто",
+      "result": "26,4 м³"
+    },
+    {
+      "url": "programmatic/uteplenie-pristroyki-100-m-sloy-150-mm.html",
+      "score": 102,
+      "intent": "insulation|утепление пристройки",
+      "result": "16,05 м³"
+    },
+    {
+      "url": "programmatic/fundament-garazha-lenta-45-m-0-4x1-4-m.html",
+      "score": 102,
+      "intent": "foundation|фундамент гаража",
+      "result": "27,72 м³"
+    },
+    {
+      "url": "programmatic/detskiy-basseyn-6x3-m-glubina-1-5-m.html",
+      "score": 97,
+      "intent": "pool|детский бассейн",
+      "result": "27 м³"
+    },
+    {
+      "url": "programmatic/styazhka-v-kvartire-ploschad-9-m-sloy-8-sm.html",
+      "score": 107,
+      "intent": "screed|стяжка в квартире",
+      "result": "1 399,68 кг"
+    },
+    {
+      "url": "programmatic/plitka-dlya-vannoy-4-m-format-600x1200-mm.html",
+      "score": 107,
+      "intent": "tile|плитка для ванной",
+      "result": "6 шт."
+    },
+    {
+      "url": "programmatic/sadovaya-dorozhka-ploschad-30-m-sloy-15-sm.html",
+      "score": 102,
+      "intent": "concrete-flat|садовая дорожка",
+      "result": "4,95 м³"
+    },
+    {
+      "url": "programmatic/uteplenie-bani-48-m-sloy-200-mm.html",
+      "score": 102,
+      "intent": "insulation|утепление бани",
+      "result": "10,27 м³"
+    },
+    {
+      "url": "programmatic/lentochnyy-fundament-pristroyki-lenta-54-m-0-4x0-8-m.html",
+      "score": 102,
+      "intent": "foundation|ленточный фундамент пристройки",
+      "result": "18,66 м³"
+    },
+    {
+      "url": "programmatic/basseyn-vo-dvore-10x4-m-glubina-1-1-m.html",
+      "score": 97,
+      "intent": "pool|бассейн во дворе",
+      "result": "44 м³"
+    },
+    {
+      "url": "programmatic/styazhka-pola-v-dome-ploschad-12-m-sloy-9-sm.html",
+      "score": 107,
+      "intent": "screed|стяжка пола в доме",
+      "result": "2 099,52 кг"
+    },
+    {
+      "url": "programmatic/plitka-na-stenu-dushevoy-20-m-format-300x300-mm.html",
+      "score": 107,
+      "intent": "tile|плитка на стену душевой",
+      "result": "256 шт."
+    },
+    {
+      "url": "programmatic/betonnaya-ploschadka-pod-avto-ploschad-48-m-sloy-10-sm.html",
+      "score": 102,
+      "intent": "concrete-flat|бетонная площадка под авто",
+      "result": "5,38 м³"
+    },
+    {
+      "url": "programmatic/uteplenie-mansardnoy-steny-48-m-sloy-100-mm.html",
+      "score": 102,
+      "intent": "insulation|утепление мансардной стены",
+      "result": "5,38 м³"
+    },
+    {
+      "url": "programmatic/lentochnyy-fundament-pristroyki-lenta-30-m-0-35x1-2-m.html",
+      "score": 102,
+      "intent": "foundation|ленточный фундамент пристройки",
+      "result": "13,48 м³"
+    },
+    {
+      "url": "programmatic/kupel-5x3-m-glubina-1-4-m.html",
+      "score": 97,
+      "intent": "pool|купель",
+      "result": "21 м³"
+    }
+  ]
+}

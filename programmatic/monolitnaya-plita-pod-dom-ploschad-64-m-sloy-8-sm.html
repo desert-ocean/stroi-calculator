@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Расчёт бетона: монолитная плита под дом 8×8 м, 5,734 м³</title>
+  <meta name="description" content="монолитная плита под дом: площадь 64 м², слой 8 см. Итоговый объём бетона 5,734 м³ с запасом 12%.">
+  
+  
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <h1>Сколько бетона нужно: монолитная плита под дом 8×8 м</h1>
+      <p>Это не справочная статья, а готовый расчёт под конкретный сценарий: монолитная плита под дом, площадь 64 м², слой 8 см.</p>
+      <p>Если изменить размеры в форме, итог пересчитается тем же скриптом, который используется в основном калькуляторе.</p>
+    </section>
+
+    <section class="card">
+      <h2>Задача</h2>
+      <p>Для задачи «монолитная плита под дом 8×8 м» расчёт даёт 5,734 м³ бетона. Чистый объём по геометрии: 5,12 м³, резерв: 0,614 м³.</p>
+    </section>
+
+<section class="card">
+      <h2>Пояснение результата</h2>
+      <p>В таких работах главная связка параметров - площадь и толщина слоя. При той же площади увеличение толщины на 2 см заметно меняет кубатуру заказа.</p>
+    </section>
+
+<section class="card">
+      <h2>Расчёт</h2>
+      <ul class="also-list"><li>Длина: 8 м</li>
+<li>Ширина: 8 м</li>
+<li>Площадь: 64 м²</li>
+<li>Толщина слоя: 8 см</li></ul><p><strong>Формула:</strong> V = 8 × 8 × 0,08 × (1 + 12 / 100)</p>
+    </section>
+
+<section class="card">
+      <h2>Итоговые значения</h2>
+      <ul class="also-list"><li>Чистый объём: 5,12 м³</li>
+<li>Запас: 0,614 м³</li>
+<li>Итого к заказу: 5,734 м³</li>
+<li>Ориентир по цементу: 1 720 кг, или 34,4 мешка по 50 кг</li>
+<li>При миксере 7 м³: около 0,8 рейса</li></ul>
+    </section>
+
+<section class="card">
+      <h2>Рекомендация</h2>
+      <p>Перед заказом бетона проверьте высоту опалубки и фактическую толщину слоя: именно эти значения чаще всего дают лишний объём.</p>
+    </section>
+
+    <section class="card">
+      <h2>Изменить параметры</h2>
+      <form id="calc-form" data-type="beton">
+        <div class="form-grid">
+<div>
+            <label for="length">Длина, м</label>
+            <input id="length" type="number" step="0.1" value="8">
+            <p>Для ленты это суммарная длина, для плиты или дорожки - длина участка.</p>
+          </div>
+<div>
+            <label for="width">Ширина, м</label>
+            <input id="width" type="number" step="0.1" value="8">
+            <p>Ширина ленты, плиты, дорожки или площадки.</p>
+          </div>
+<div>
+            <label for="height">Толщина или высота, м</label>
+            <input id="height" type="number" step="0.01" value="0.08">
+            <p>Для плиты это толщина, для ленты - высота бетонирования.</p>
+          </div>
+<div>
+            <label for="reserve">Запас, %</label>
+            <input id="reserve" type="number" step="0.1" value="12">
+            <p>Резерв на потери, подачу и неточные замеры.</p>
+          </div>
+        </div>
+        <button type="submit">Рассчитать</button>
+      </form>
+      <h2 id="result">Результат: 5,734 м³ бетона.</h2>
+      <p><a href="../calculators/kalkulyator-betona.html">Открыть основной калькулятор</a></p>
+    </section>
+
+    <section class="card">
+      <h2>Похожие расчёты</h2>
+      <ul class="also-list">
+        <li><a href="betonnaya-ploschadka-pod-avto-ploschad-16-m-sloy-8-sm.html">Сколько бетона нужно: бетонная площадка под авто 4×4 м</a></li>
+<li><a href="plita-pod-garazh-ploschad-80-m-sloy-12-sm.html">Сколько бетона нужно: плита под гараж 8×10 м</a></li>
+<li><a href="betonnaya-ploschadka-pod-avto-ploschad-120-m-sloy-20-sm.html">Сколько бетона нужно: бетонная площадка под авто 10×12 м</a></li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Полезные калькуляторы</h2>
+      <ul class="also-list">
+        <li><a href="../calculators/kalkulyator-betona.html">Калькулятор бетона</a></li>
+<li><a href="../calculators/kalkulyator-fundamenta.html">Калькулятор фундамента</a></li>
+<li><a href="../calculators/kalkulyator-obema-betona.html">Калькулятор объёма бетона</a></li>
+<li><a href="../calculators/kalkulyator-rashoda-cementa.html">Калькулятор расхода цемента</a></li>
+      </ul>
+      <p><a href="index.html">Все готовые расчёты</a></p>
+      <p><a href="../index.html">На главную</a></p>
+    </section>
+  </main>
+  <script src="../assets/script.js"></script>
+</body>
+</html>

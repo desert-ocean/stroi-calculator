@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{TITLE}}</title>
   <meta name="description" content="{{DESCRIPTION}}">
+  {{ROBOTS_META}}
+  {{CANONICAL}}
   <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
@@ -12,37 +14,16 @@
     <section class="card">
       <h1>{{H1}}</h1>
       <p>{{INTRO}}</p>
-      <p>{{INTRO_2}}</p>
+      <p>{{TASK}}</p>
     </section>
 
-    <section class="card">
-      <h2>Результат расчёта</h2>
-      <p>{{RESULT_SUMMARY}}</p>
-      <ul class="also-list">
-        {{INPUT_ITEMS}}
-      </ul>
-      <p><strong>Формула:</strong> {{FORMULA}}</p>
-      <ul class="also-list">
-        {{RESULT_ITEMS}}
-      </ul>
-      <p>{{RESULT_EXPLANATION}}</p>
-    </section>
+    {{DYNAMIC_BLOCKS}}
 
     <section class="card">
-      <h2>Проверить и изменить параметры</h2>
+      <h2>Изменить параметры</h2>
       {{FORM}}
       <h2 id="result">{{LIVE_RESULT}}</h2>
       <p><a href="{{CALCULATOR_URL}}">Открыть основной калькулятор</a></p>
-    </section>
-
-    <section class="card">
-      <h2>Как читать результат</h2>
-      <p>{{BODY_1}}</p>
-      <p>{{BODY_2}}</p>
-      <p>{{BODY_3}}</p>
-
-      <h3>Разбор сценария</h3>
-      <p>{{EXAMPLE_TEXT}}</p>
     </section>
 
     <section class="card">
@@ -57,7 +38,7 @@
       <ul class="also-list">
         {{RELATED_CALCULATORS}}
       </ul>
-      <p><a href="index.html">Все сценарные страницы</a></p>
+      <p><a href="index.html">Все готовые расчёты</a></p>
       <p><a href="../index.html">На главную</a></p>
     </section>
   </main>
