@@ -1,20 +1,130 @@
 <head>
+  <!-- ========== BASE ========== -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- SEO -->
+  <!-- ========== SEO ========== -->
   <title>{{ page.title | default: site.title }}</title>
-  <meta name="description" content="{{ page.description | default: site.description }}">
 
-  <!-- СТИЛИ -->
-  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
+  <meta name="description"
+        content="{{ page.description | default: site.description }}">
 
-  <!-- ИКОНКИ -->
+  {% if page.keywords or site.keywords %}
+  <meta name="keywords"
+        content="{{ page.keywords | default: site.keywords }}">
+  {% endif %}
+
+  <meta name="robots" content="index, follow">
+
+  <link rel="canonical"
+        href="{{ page.url | absolute_url }}">
+
+  <!-- ========== OPEN GRAPH ========== -->
+  <meta property="og:type" content="website">
+
+  <meta property="og:title"
+        content="{{ page.title | default: site.title }}">
+
+  <meta property="og:description"
+        content="{{ page.description | default: site.description }}">
+
+  <meta property="og:url"
+        content="{{ page.url | absolute_url }}">
+
+  <meta property="og:image"
+        content="{{ page.og_image | default: site.og_image | absolute_url }}">
+
+  <meta property="og:locale" content="ru_RU">
+
+  <!-- ========== TWITTER ========== -->
+  <meta name="twitter:card" content="summary_large_image">
+
+  <meta name="twitter:title"
+        content="{{ page.title | default: site.title }}">
+
+  <meta name="twitter:description"
+        content="{{ page.description | default: site.description }}">
+
+  <meta name="twitter:image"
+        content="{{ page.og_image | default: site.og_image | absolute_url }}">
+
+  <!-- ========== STYLES ========== -->
+  <link rel="stylesheet"
+        href="{{ '/assets/style.css' | relative_url }}">
+
+  <!-- ========== FAVICONS ========== -->
   <link rel="icon" href="/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+  <link rel="icon"
+        type="image/png"
+        sizes="32x32"
+        href="/favicon-32.png">
+
+  <link rel="icon"
+        type="image/png"
+        sizes="192x192"
+        href="/favicon-192.png">
+
+  <link rel="apple-touch-icon"
+        sizes="180x180"
+        href="/apple-touch-icon.png">
 
   <link rel="manifest" href="/site.webmanifest">
+
   <meta name="theme-color" content="#000000">
+
+  <!-- ========== GOOGLE ANALYTICS ========== -->
+  {% if site.google_analytics %}
+  <script async
+          src="https://www.googletagmanager.com/gtag/js?id={{ site.google_analytics }}">
+  </script>
+
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+    gtag('config', '{{ site.google_analytics }}');
+  </script>
+  {% endif %}
+
+  <!-- ========== YANDEX METRIKA ========== -->
+  {% if site.yandex_metrika %}
+  <script>
+    (function(m,e,t,r,i,k,a){
+      m[i]=m[i]||function(){
+        (m[i].a=m[i].a||[]).push(arguments)
+      };
+
+      m[i].l=1*new Date();
+
+      k=e.createElement(t),
+      a=e.getElementsByTagName(t)[0];
+
+      k.async=1;
+      k.src=r;
+      a.parentNode.insertBefore(k,a)
+
+    })(window, document, "script",
+      "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+    ym({{ site.yandex_metrika }}, "init", {
+      clickmap:true,
+      trackLinks:true,
+      accurateTrackBounce:true,
+      webvisor:true
+    });
+  </script>
+
+  <noscript>
+    <div>
+      <img src="https://mc.yandex.ru/watch/{{ site.yandex_metrika }}"
+           style="position:absolute; left:-9999px;"
+           alt="">
+    </div>
+  </noscript>
+  {% endif %}
 </head>

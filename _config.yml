@@ -1,2 +1,15 @@
-title: Строительные калькуляторы онлайн
-description: Онлайн калькуляторы для расчёта бетона, фундамента, кровли, утепления и ремонта
+title: "Строительные калькуляторы онлайн"
+
+description: "Онлайн калькуляторы для расчёта бетона, фундамента, кровли, утепления и ремонта"
+
+url: "https://stroy-zamer.ru"
+
+timezone: "Europe/Moscow"
+
+google_analytics: "G-JRQE2HD9CL"
+
+yandex_metrika: "109163132"
+
+og_image: "/og-image.jpg"
+
+permalink: /:title/
