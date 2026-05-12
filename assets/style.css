@@ -126,3 +126,34 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+.about-author {
+  margin-top: 60px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #f7f7f7;
+}
+
+.about-author h2 {
+  margin-bottom: 12px;
+}
+
+.about-author p {
+  margin-bottom: 10px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.author-links a {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #0088cc;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.author-links a:hover {
+  background: #0077b5;
+}
