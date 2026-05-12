@@ -16,8 +16,9 @@
 
   <meta name="robots" content="index, follow">
 
+  <!-- 🔧 FIX 1: canonical лучше через site.url -->
   <link rel="canonical"
-        href="{{ page.url | absolute_url }}">
+        href="{{ site.url }}{{ page.url }}">
 
   <!-- ========== OPEN GRAPH ========== -->
   <meta property="og:type" content="website">
@@ -28,11 +29,13 @@
   <meta property="og:description"
         content="{{ page.description | default: site.description }}">
 
+  <!-- 🔧 FIX 2: OG URL должен быть абсолютным -->
   <meta property="og:url"
-        content="{{ page.url | absolute_url }}">
+        content="{{ site.url }}{{ page.url }}">
 
+  <!-- 🔧 FIX 3: OG image делаем стабильным (без absolute_url багов) -->
   <meta property="og:image"
-        content="{{ page.og_image | default: site.og_image | absolute_url }}">
+        content="{{ site.og_image }}">
 
   <meta property="og:locale" content="ru_RU">
 
@@ -46,7 +49,7 @@
         content="{{ page.description | default: site.description }}">
 
   <meta name="twitter:image"
-        content="{{ page.og_image | default: site.og_image | absolute_url }}">
+        content="{{ site.og_image }}">
 
   <!-- ========== STYLES ========== -->
   <link rel="stylesheet"
@@ -72,6 +75,10 @@
   <link rel="manifest" href="/site.webmanifest">
 
   <meta name="theme-color" content="#000000">
+
+  <!-- ========== PERFORMANCE FIX ========== -->
+  <link rel="preconnect" href="https://www.googletagmanager.com">
+  <link rel="preconnect" href="https://mc.yandex.ru">
 
   <!-- ========== GOOGLE ANALYTICS ========== -->
   {% if site.google_analytics %}
